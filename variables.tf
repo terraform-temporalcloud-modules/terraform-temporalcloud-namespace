@@ -70,7 +70,9 @@ variable "certificate_filters" {
   default = null
 
   validation {
-    condition     = var.certificate_filters == null || length(coalesce(var.certificate_filters, [])) > 0
+    # try(..., true) rather than a `== null ||` guard: HCL evaluates the null
+    # case fine, but this reads better and is consistent with the other checks.
+    condition     = try(length(var.certificate_filters) > 0, true)
     error_message = "Empty certificate filter lists are not allowed by the provider. Omit the variable instead."
   }
 }
@@ -88,7 +90,9 @@ variable "capacity" {
   default = null
 
   validation {
-    condition     = try(var.capacity.mode, null) == null || contains(["provisioned", "on_demand"], coalesce(try(var.capacity.mode, null), "on_demand"))
+    # `contains` raises on a null needle, so `capacity = { value = 10 }` with mode
+    # omitted must not reach it. try() absorbs both that and a null capacity.
+    condition     = try(contains(["provisioned", "on_demand"], var.capacity.mode), true)
     error_message = "Capacity mode must be one of: provisioned, on_demand."
   }
 
@@ -110,7 +114,7 @@ variable "codec_server" {
   default = null
 
   validation {
-    condition     = var.codec_server == null || startswith(coalesce(try(var.codec_server.endpoint, null), "https"), "https")
+    condition     = try(startswith(var.codec_server.endpoint, "https"), true)
     error_message = "The codec server endpoint must begin with \"https\"."
   }
 }
