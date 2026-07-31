@@ -13,6 +13,14 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
+    # The org default for GITHUB_TOKEN is read-only, which makes semantic-release
+    # fail with EGITNOPERMISSION when it pushes the tag and CHANGELOG commit.
+    # Granted here per job rather than raising the repo-wide default, so only
+    # this workflow can write.
+    permissions:
+      contents: write       # push the release commit and version tag
+      issues: write         # comment on released issues
+      pull-requests: write  # comment on released PRs
     # Never cut releases from forks.
     if: github.repository_owner == 'terraform-temporalcloud-modules'
     steps:
