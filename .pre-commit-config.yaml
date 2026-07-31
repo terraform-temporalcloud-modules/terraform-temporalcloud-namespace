@@ -3,7 +3,14 @@ repos:
     rev: v1.108.1
     hooks:
       - id: terraform_fmt
-      - id: terraform_wrapper_module_for_each
+      # terraform_wrapper_module_for_each is deliberately NOT enabled. It hardcodes
+      # terraform-aws-modules/<repo>/aws for the generated source addresses, and it
+      # unconditionally overwrites wrappers/README.md with an AWS S3 Terragrunt
+      # example whose variables (force_destroy, attach_elb_log_delivery_policy, ...)
+      # do not exist in this module. Only five placeholders are substituted and
+      # there is no flag to skip the README, so restoring a correct one leaves the
+      # gate permanently dirty. wrappers/ is hand-maintained instead, guarded by the
+      # local wrapper-sync hook below.
       - id: terraform_docs
         args:
           - '--args=--lockfile=false'
@@ -29,3 +36,14 @@ repos:
       - id: check-merge-conflict
       - id: end-of-file-fixer
       - id: trailing-whitespace
+
+  # Replaces the drift protection lost by not running the upstream wrapper
+  # generator: fails if a root module variable is not passed through the wrapper.
+  - repo: local
+    hooks:
+      - id: wrapper-sync
+        name: Wrapper passes through all root variables
+        entry: scripts/check-wrapper-sync.sh
+        language: system
+        pass_filenames: false
+        files: ^(variables\.tf|wrappers/main\.tf)$

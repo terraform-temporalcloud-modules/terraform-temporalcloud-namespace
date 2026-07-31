@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+#
+# Verifies wrappers/main.tf passes through every variable the root module declares.
+#
+# Upstream's terraform_wrapper_module_for_each pre-commit hook would generate the
+# wrapper for us, but it also overwrites wrappers/README.md on every run with an
+# AWS S3 Terragrunt example referencing variables this module does not have, and
+# exposes no flag to skip the README. Restoring the README afterwards makes the
+# gate permanently dirty, because the generator rewrites it on every pass. So the
+# wrapper files are maintained by hand and this script guards against drift.
+#
+# Uses grep/sed rather than rg so it runs on a bare CI image.
+
+set -euo pipefail
+
+cd "$(git rev-parse --show-toplevel)"
+
+root_vars="$(grep -oE '^variable "[^"]+"' variables.tf \
+  | sed 's/^variable "//; s/"$//' | sort)"
+
+# Extracts the argument names passed to the wrapped module. `source` and
+# `for_each` also match; harmless, since we only report root variables missing
+# from this set.
+wired="$(grep -oE '^  [a-z_]+ +=' wrappers/main.tf | tr -d ' =' | sort)"
+
+missing="$(comm -23 <(printf '%s\n' "$root_vars") <(printf '%s\n' "$wired"))"
+
+if [[ -n "$missing" ]]; then
+  echo "wrappers/main.tf does not pass through every root module variable." >&2
+  echo "Missing:" >&2
+  printf '%s\n' "$missing" | sed 's/^/  - /' >&2
+  echo >&2
+  echo "Add each as:" >&2
+  echo '  <name> = try(each.value.<name>, var.defaults.<name>, <default>)' >&2
+  exit 1
+fi
+
+echo "wrappers/main.tf is in sync with $(printf '%s\n' "$root_vars" | wc -l | tr -d ' ') root variables"

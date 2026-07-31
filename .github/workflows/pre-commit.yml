@@ -83,4 +83,5 @@ jobs:
           terraform-version: ${{ steps.minMax.outputs.maxVersion }}
           tflint-version: ${{ env.TFLINT_VERSION }}
           terraform-docs-version: ${{ env.TERRAFORM_DOCS_VERSION }}
-          install-hcledit: true
+          # hcledit is not installed: it exists only to serve
+          # terraform_wrapper_module_for_each, which this repo does not run.
