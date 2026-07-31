@@ -1,0 +1,62 @@
+################################################################################
+# Namespace
+#
+# Every output is wrapped in `try()` because the resources are count-gated on
+# `create_namespace` — a bare reference would fail to evaluate when false.
+################################################################################
+
+output "namespace_id" {
+  description = "The unique identifier of the namespace across all Temporal Cloud tenants, in the form `<namespace>.<account_id>`"
+  value       = try(temporalcloud_namespace.this[0].id, "")
+}
+
+output "namespace_name" {
+  description = "The name of the namespace"
+  value       = try(temporalcloud_namespace.this[0].name, "")
+}
+
+output "namespace_regions" {
+  description = "The regions the namespace is available in"
+  value       = try(temporalcloud_namespace.this[0].regions, [])
+}
+
+################################################################################
+# Endpoints
+#
+# Surfaced individually as well as whole: the gRPC address is what worker and
+# client configuration actually needs, so make it directly consumable.
+################################################################################
+
+output "namespace_endpoints" {
+  description = "All endpoints for the namespace (gRPC, mTLS gRPC and Web UI addresses)"
+  value       = try(temporalcloud_namespace.this[0].endpoints, {})
+}
+
+output "namespace_grpc_address" {
+  description = "The gRPC address for API key client connections. Empty when API key auth is disabled"
+  value       = try(temporalcloud_namespace.this[0].endpoints.grpc_address, "")
+}
+
+output "namespace_mtls_grpc_address" {
+  description = "The gRPC address for mTLS client connections. Empty when mTLS is disabled"
+  value       = try(temporalcloud_namespace.this[0].endpoints.mtls_grpc_address, "")
+}
+
+output "namespace_web_address" {
+  description = "The address of the namespace in the Temporal Cloud Web UI"
+  value       = try(temporalcloud_namespace.this[0].endpoints.web_address, "")
+}
+
+################################################################################
+# Search attributes and tags
+################################################################################
+
+output "namespace_search_attributes" {
+  description = "Map of custom search attribute name => type created on the namespace"
+  value       = try({ for k, v in temporalcloud_namespace_search_attribute.this : k => v.type }, {})
+}
+
+output "namespace_tags" {
+  description = "The complete set of tags applied to the namespace"
+  value       = try(temporalcloud_namespace_tags.this[0].tags, {})
+}
