@@ -5,9 +5,12 @@ on:
     branches:
       - main
 
+# These must match the versions contributors run locally. terraform-docs changed
+# its markdown table separator style after v0.20.0, so a mismatch makes CI reject
+# docs that were generated correctly on a developer's machine.
 env:
-  TERRAFORM_DOCS_VERSION: v0.20.0
-  TFLINT_VERSION: v0.59.1
+  TERRAFORM_DOCS_VERSION: v0.24.0
+  TFLINT_VERSION: v0.64.0
 
 jobs:
   collectInputs:
