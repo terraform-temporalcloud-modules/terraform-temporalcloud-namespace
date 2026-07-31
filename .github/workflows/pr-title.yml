@@ -12,6 +12,9 @@ on:
 
 permissions:
   pull-requests: read
+  # `wip: true` reports its state as a commit status, which needs write access.
+  # The org default GITHUB_TOKEN scope is read-only, so it must be granted here.
+  statuses: write
 
 jobs:
   main:

@@ -1,10 +1,66 @@
-# Wrapper for the root module
+# Wrapper for the Temporal Cloud namespace module
 
-The configuration in this directory contains an implementation of a single module wrapper pattern, which allows managing several copies of a module in places where using the native Terraform 0.13+ `for_each` feature is not feasible (e.g., with Terragrunt).
+The configuration in `wrappers/` implements the single module wrapper pattern, which allows managing
+several copies of this module from one call in places where the native `for_each` on a module block is
+not available — most commonly Terragrunt.
 
-You may want to use a single Terragrunt configuration file to manage multiple resources without duplicating `terragrunt.hcl` files for each copy of the same module.
+This wrapper adds no functionality of its own. Every key under `items` accepts any input the root
+module accepts, and `defaults` supplies values shared by all items.
 
-This wrapper does not implement any extra functionality.
+> **Maintenance.** These files are hand-maintained. Upstream's
+> `terraform_wrapper_module_for_each` pre-commit hook is deliberately not used, because it overwrites
+> this README on every run with an AWS S3 example whose variables do not exist in this module — see
+> the comment in `.pre-commit-config.yaml`. When you add a variable to the root module, add a matching
+> line to `wrappers/main.tf`; the `wrapper-sync` hook fails the build if you forget.
+
+## Usage with Terraform
+
+```hcl
+module "namespaces" {
+  source = "terraform-temporalcloud-modules/namespace/temporalcloud//wrappers"
+
+  # Shared by every item unless the item overrides it.
+  defaults = {
+    regions        = ["aws-us-east-1"]
+    retention_days = 30
+    api_key_auth   = true
+
+    tags = {
+      Terraform = "true"
+    }
+  }
+
+  items = {
+    orders = {
+      name = "orders-prod"
+
+      search_attributes = {
+        CustomerId = "Keyword"
+        OrderTotal = "Double"
+      }
+    }
+
+    payments = {
+      name           = "payments-prod"
+      retention_days = 90 # overrides the default above
+    }
+
+    # Two regions provisions a high availability namespace.
+    audit = {
+      name    = "audit-prod"
+      regions = ["aws-us-east-1", "aws-us-west-2"]
+    }
+  }
+}
+```
+
+Outputs are keyed by the same map keys:
+
+```hcl
+output "orders_grpc_address" {
+  value = module.namespaces.wrapper["orders"].namespace_grpc_address
+}
+```
 
 ## Usage with Terragrunt
 
@@ -12,89 +68,37 @@ This wrapper does not implement any extra functionality.
 
 ```hcl
 terraform {
-  source = "tfr:///terraform-aws-modules/terraform-temporalcloud-namespace/aws//wrappers"
+  source = "tfr:///terraform-temporalcloud-modules/namespace/temporalcloud//wrappers?version=1.0.0"
   # Alternative source:
-  # source = "git::git@github.com:terraform-aws-modules/terraform-aws-terraform-temporalcloud-namespace.git//wrappers?ref=master"
-}
-
-inputs = {
-  defaults = { # Default values
-    create = true
-    tags = {
-      Terraform   = "true"
-      Environment = "dev"
-    }
-  }
-
-  items = {
-    my-item = {
-      # omitted... can be any argument supported by the module
-    }
-    my-second-item = {
-      # omitted... can be any argument supported by the module
-    }
-    # omitted...
-  }
-}
-```
-
-## Usage with Terraform
-
-```hcl
-module "wrapper" {
-  source = "terraform-aws-modules/terraform-temporalcloud-namespace/aws//wrappers"
-
-  defaults = { # Default values
-    create = true
-    tags = {
-      Terraform   = "true"
-      Environment = "dev"
-    }
-  }
-
-  items = {
-    my-item = {
-      # omitted... can be any argument supported by the module
-    }
-    my-second-item = {
-      # omitted... can be any argument supported by the module
-    }
-    # omitted...
-  }
-}
-```
-
-## Example: Manage multiple S3 buckets in one Terragrunt layer
-
-`eu-west-1/s3-buckets/terragrunt.hcl`:
-
-```hcl
-terraform {
-  source = "tfr:///terraform-aws-modules/terraform-temporalcloud-namespace/aws//wrappers"
-  # Alternative source:
-  # source = "git::git@github.com:terraform-aws-modules/terraform-aws-terraform-temporalcloud-namespace.git//wrappers?ref=master"
+  # source = "git::git@github.com:terraform-temporalcloud-modules/terraform-temporalcloud-namespace.git//wrappers?ref=v1.0.0"
 }
 
 inputs = {
   defaults = {
-    force_destroy = true
-
-    attach_elb_log_delivery_policy        = true
-    attach_lb_log_delivery_policy         = true
-    attach_deny_insecure_transport_policy = true
-    attach_require_latest_tls_policy      = true
+    regions        = ["aws-us-east-1"]
+    retention_days = 30
+    api_key_auth   = true
   }
 
   items = {
-    bucket1 = {
-      bucket = "my-random-bucket-1"
-    }
-    bucket2 = {
-      bucket = "my-random-bucket-2"
-      tags = {
-        Secure = "probably"
-      }
-    }
+    orders   = { name = "orders-prod" }
+    payments = { name = "payments-prod", retention_days = 90 }
   }
 }
 ```
+
+Pin `?version=` / `?ref=` to a released tag rather than a branch, so a wrapper upgrade is a deliberate
+change.
+
+## Inputs
+
+| Name | Description | Type | Default |
+| ---- | ----------- | ---- | ------- |
+| `defaults` | Default values applied to every namespace in `items`, unless that item overrides them | `any` | `{}` |
+| `items` | Map of namespaces to create; each key becomes an instance of the module | `any` | `{}` |
+
+## Outputs
+
+| Name | Description |
+| ---- | ----------- |
+| `wrapper` | Map of module outputs, keyed by the same keys as `items` |

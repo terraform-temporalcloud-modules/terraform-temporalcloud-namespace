@@ -5,9 +5,12 @@ on:
     branches:
       - main
 
+# These must match the versions contributors run locally. terraform-docs changed
+# its markdown table separator style after v0.20.0, so a mismatch makes CI reject
+# docs that were generated correctly on a developer's machine.
 env:
-  TERRAFORM_DOCS_VERSION: v0.20.0
-  TFLINT_VERSION: v0.59.1
+  TERRAFORM_DOCS_VERSION: v0.24.0
+  TFLINT_VERSION: v0.64.0
 
 jobs:
   collectInputs:
@@ -17,7 +20,7 @@ jobs:
       directories: ${{ steps.dirs.outputs.directories }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Get root directories
         id: dirs
@@ -34,11 +37,11 @@ jobs:
         directory: ${{ fromJson(needs.collectInputs.outputs.directories) }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Terraform min/max versions
         id: minMax
-        uses: clowdhaus/terraform-min-max@v2.1.0
+        uses: clowdhaus/terraform-min-max@v3.0.1
         with:
           directory: ${{ matrix.directory }}
 
@@ -65,14 +68,14 @@ jobs:
     needs: collectInputs
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
 
       - name: Terraform min/max versions
         id: minMax
-        uses: clowdhaus/terraform-min-max@v2.1.0
+        uses: clowdhaus/terraform-min-max@v3.0.1
 
       - name: Pre-commit Terraform ${{ steps.minMax.outputs.maxVersion }}
         uses: clowdhaus/terraform-composite-actions/pre-commit@v1.14.0
@@ -80,4 +83,5 @@ jobs:
           terraform-version: ${{ steps.minMax.outputs.maxVersion }}
           tflint-version: ${{ env.TFLINT_VERSION }}
           terraform-docs-version: ${{ env.TERRAFORM_DOCS_VERSION }}
-          install-hcledit: true
+          # hcledit is not installed: it exists only to serve
+          # terraform_wrapper_module_for_each, which this repo does not run.

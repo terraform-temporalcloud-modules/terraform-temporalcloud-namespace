@@ -1,11 +1,11 @@
 variable "defaults" {
-  description = "Map of default values which will be used for each item."
+  description = "Default values applied to every namespace in `items`, unless that item overrides them. Accepts any input the root module accepts"
   type        = any
   default     = {}
 }
 
 variable "items" {
-  description = "Maps of items to create a wrapper from. Values are passed through to the module."
+  description = "Map of namespaces to create. Each key becomes an instance of the module and each value accepts any input the root module accepts"
   type        = any
   default     = {}
 }

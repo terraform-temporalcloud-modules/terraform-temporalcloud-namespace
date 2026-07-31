@@ -1,5 +1,4 @@
 output "wrapper" {
-  description = "Map of outputs of a wrapper."
+  description = "Map of module outputs, keyed by the same keys as `items`"
   value       = module.wrapper
-  # sensitive = false # No sensitive module output found
 }
