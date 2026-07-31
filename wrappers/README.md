@@ -94,8 +94,8 @@ change.
 
 | Name | Description | Type | Default |
 | ---- | ----------- | ---- | ------- |
-| `defaults` | Map of default values applied to every item | `any` | `{}` |
-| `items` | Map of items to create; values are passed through to the module | `any` | `{}` |
+| `defaults` | Default values applied to every namespace in `items`, unless that item overrides them | `any` | `{}` |
+| `items` | Map of namespaces to create; each key becomes an instance of the module | `any` | `{}` |
 
 ## Outputs
 
