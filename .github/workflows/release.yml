@@ -36,11 +36,19 @@ jobs:
           node-version: 24
 
       - name: Install dependencies
+        # conventional-changelog-conventionalcommits is deliberately held at 9.x,
+        # NOT bumped to 10.x. At v10 the preset's handlebars templates moved out
+        # into @conventional-changelog/template, changing its output shape.
+        # semantic-release 25's @semantic-release/release-notes-generator@14 pins
+        # conventional-changelog-writer@^8, which cannot render that shape: the
+        # release notes and CHANGELOG entry come out EMPTY while commit-analyzer
+        # still resolves the version correctly, so CI passes and the breakage is
+        # silent. Revisit only when release-notes-generator moves to writer v9.
         run: |
           npm install \
             @semantic-release/changelog@7.0.0 \
             @semantic-release/git@11.0.1 \
-            conventional-changelog-conventionalcommits@10.2.1
+            conventional-changelog-conventionalcommits@9.3.1
 
       - name: Release
         uses: cycjimmy/semantic-release-action@v6
