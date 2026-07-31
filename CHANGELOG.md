@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.2](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/compare/v1.0.1...v1.0.2) (2026-07-31)
+
+### Bug Fixes
+
+* Hold changelog preset at 9.x for semantic-release compatibility ([#2](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/issues/2)) ([a53d3e3](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/commit/a53d3e3f7ac36a5073cfa7b6274e54c2d19a032c))
+
 ## [1.0.1](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/compare/v1.0.0...v1.0.1) (2026-07-31)
 
 ## 1.0.0 (2026-07-31)
