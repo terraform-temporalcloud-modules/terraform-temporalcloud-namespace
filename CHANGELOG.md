@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/compare/v1.0.3...v1.1.0) (2026-08-01)
+
+### Features
+
+* Add apply-based terraform test suite ([#4](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/issues/4)) ([fae789b](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/commit/fae789bfb39530f599230dc84a713d5d39f86130))
+
 ## [1.0.3](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/compare/v1.0.2...v1.0.3) (2026-08-01)
 
 ### Bug Fixes
