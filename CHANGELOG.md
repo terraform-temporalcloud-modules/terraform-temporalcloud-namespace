@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.1](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/compare/v2.0.0...v2.0.1) (2026-08-01)
+
+### Bug Fixes
+
+* Cap the namespace name at 39 characters, and pin examples to v2 ([2ea196d](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/commit/2ea196d0f951c5593c4164825a2579197279087e))
+
 ## [2.0.0](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/compare/v1.1.5...v2.0.0) (2026-08-01)
 
 ### ⚠ BREAKING CHANGES
