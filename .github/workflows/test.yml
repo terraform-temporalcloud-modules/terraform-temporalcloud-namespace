@@ -7,9 +7,18 @@ name: Apply Tests
 #   - namespace creation is slow, and accounts cap how many can exist
 #   - every PR would cost money
 #
-# Run on demand, plus a weekly canary so provider regressions surface without
-# waiting for someone to remember.
+# They DO run on main after Pre-Commit passes, because a release must not be
+# published from code the apply tests reject. Release is chained after this
+# workflow, so the sequence on a merge is:
+#
+#   push to main -> Pre-Commit -> Apply Tests -> Release
+#
+# Any failure in the chain stops the release.
 on:
+  workflow_run:
+    workflows: ['Pre-Commit']
+    types: [completed]
+    branches: [main]
   workflow_dispatch:
   schedule:
     # Mondays 06:00 UTC.
@@ -26,27 +35,28 @@ jobs:
   test:
     name: terraform test
     runs-on: ubuntu-latest
-    # Never bill the account from a fork.
-    if: github.repository_owner == 'terraform-temporalcloud-modules'
+    # Never bill the account from a fork, and when chained after Pre-Commit only
+    # proceed if that run actually passed.
+    if: >-
+      github.repository_owner == 'terraform-temporalcloud-modules' &&
+      (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
     steps:
       - name: Checkout
         uses: actions/checkout@v7
-
-      # Fail fast with a clear message rather than a confusing provider error.
-      # `secrets` is not usable in a job-level `if`, so this is checked in a step.
-      - name: Require API key
-        env:
-          TEMPORAL_CLOUD_API_KEY: ${{ secrets.TEMPORAL_CLOUD_API_KEY }}
-        run: |
-          if [ -z "$TEMPORAL_CLOUD_API_KEY" ]; then
-            echo "::error::TEMPORAL_CLOUD_API_KEY secret is not set. These tests apply real resources and cannot run without it."
-            exit 1
-          fi
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v4.0.1
         with:
           terraform_wrapper: false
+
+      # First real step: prove the API answers and the key is accepted. Without
+      # this, a missing, expired or wrong-account key surfaces minutes later as a
+      # namespace that would not create, which reads as a test failure rather than
+      # a credentials problem.
+      - name: API liveness check
+        env:
+          TEMPORAL_CLOUD_API_KEY: ${{ secrets.TEMPORAL_CLOUD_API_KEY }}
+        run: scripts/check-api.sh
 
       - name: Init
         run: terraform init -backend=false
