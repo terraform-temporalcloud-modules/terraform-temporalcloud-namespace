@@ -5,8 +5,13 @@ name: Pre-Commit
 # so a branch-scoped badge reports "no status". It also catches a merge that breaks
 # main even though the pull request was green.
 #
-# semantic-release marks its changelog commit `[skip ci]`, so the release push does
-# not trigger a redundant run.
+# semantic-release marks its changelog commit with a skip-ci directive, so the
+# release push does not trigger a redundant run.
+#
+# workflow_dispatch is included so a run can be triggered by hand. GitHub honours a
+# skip-ci directive found anywhere in a commit message, including in prose, so a
+# push can be skipped unintentionally and leave the status badge stale. Without a
+# manual trigger there is no way to recover except pushing again.
 on:
   pull_request:
     branches:
@@ -14,6 +19,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 # These must match the versions contributors run locally. terraform-docs changed
 # its markdown table separator style after v0.20.0, so a mismatch makes CI reject
