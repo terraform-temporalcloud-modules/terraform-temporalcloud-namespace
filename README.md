@@ -71,7 +71,11 @@ module "namespace" {
 
 ### High availability namespace
 
-Passing two regions replicates the namespace across both:
+Passing two regions replicates the namespace across both. Not every pair is
+permitted — Temporal Cloud restricts which regions may be combined, and an
+unsupported pair is rejected at apply with `Selected regions <a> and <b> are
+disallowed`. Same-provider pairs are not automatically valid; check with Temporal
+which combinations your account supports:
 
 ```hcl
 module "namespace" {
