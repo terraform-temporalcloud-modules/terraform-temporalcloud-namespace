@@ -1,7 +1,16 @@
 # Temporal Cloud Namespace Terraform module
 
+[![CI](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/actions/workflows/pre-commit.yml/badge.svg?branch=main)](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/actions/workflows/pre-commit.yml?query=branch%3Amain)
+[![Apply Tests](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/actions/workflows/test.yml?query=branch%3Amain)
+
 Terraform module which creates a [Temporal Cloud](https://temporal.io/cloud) namespace, together with
 its custom search attributes and tags.
+
+Both badges report the state of `main`. **CI** covers formatting, linting,
+documentation and `terraform validate`, and runs on every pull request and again
+after merge. **Apply Tests** creates and destroys real namespaces against a live
+Temporal Cloud account, weekly and on demand — the only check that proves the API
+accepts what this module sends.
 
 ## Requirements
 
