@@ -17,7 +17,7 @@ root_vars="$(grep -oE '^variable "[^"]+"' variables.tf \
 # Extracts the argument names passed to the wrapped module. `source` and
 # `for_each` also match; harmless, since only root variables missing from this
 # from this set.
-wired="$(grep -oE '^  [a-z_]+ +=' wrappers/main.tf | tr -d ' =' | sort)"
+wired="$(grep -oE '^  [a-z0-9_]+ +=' wrappers/main.tf | tr -d ' =' | sort)"
 
 missing="$(comm -23 <(printf '%s\n' "$root_vars") <(printf '%s\n' "$wired"))"
 
