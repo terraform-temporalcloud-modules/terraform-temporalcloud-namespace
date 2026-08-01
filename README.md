@@ -6,12 +6,6 @@
 Terraform module which creates a [Temporal Cloud](https://temporal.io/cloud) namespace, together with
 its custom search attributes and tags.
 
-Both badges report the state of `main`. **CI** covers formatting, linting,
-documentation and `terraform validate`, and runs on every pull request and again
-after merge. **Apply Tests** creates and destroys real namespaces against a live
-Temporal Cloud account, weekly and on demand — the only check that proves the API
-accepts what this module sends.
-
 ## Requirements
 
 The `temporalcloud` provider authenticates with an API key, read from the `TEMPORAL_CLOUD_API_KEY`
