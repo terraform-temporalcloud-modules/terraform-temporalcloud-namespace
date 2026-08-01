@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.1](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/compare/v1.1.0...v1.1.1) (2026-08-01)
+
+### Bug Fixes
+
+* Prefix test namespaces with yulei- for cleanup ([#5](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/issues/5)) ([2b2c6b2](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/commit/2b2c6b271de8f3d75f59033b296839264aec34ab))
+
 ## [1.1.0](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/compare/v1.0.3...v1.1.0) (2026-08-01)
 
 ### Features
