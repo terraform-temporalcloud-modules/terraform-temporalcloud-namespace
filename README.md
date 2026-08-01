@@ -29,7 +29,7 @@ A namespace also needs at least one client authentication method: `api_key_auth`
 ```hcl
 module "namespace" {
   source  = "terraform-temporalcloud-modules/namespace/temporalcloud"
-  version = "~> 1.0"
+  version = "~> 2.0"
 
   name           = "orders-prod"
   regions        = ["aws-us-east-1"]
@@ -54,7 +54,7 @@ module "namespace" {
 ```hcl
 module "namespace" {
   source  = "terraform-temporalcloud-modules/namespace/temporalcloud"
-  version = "~> 1.0"
+  version = "~> 2.0"
 
   name           = "orders-prod"
   regions        = ["aws-us-east-1"]
@@ -83,7 +83,7 @@ which combinations your account supports:
 ```hcl
 module "namespace" {
   source  = "terraform-temporalcloud-modules/namespace/temporalcloud"
-  version = "~> 1.0"
+  version = "~> 2.0"
 
   name           = "orders-prod"
   regions        = ["aws-us-east-1", "aws-us-west-2"]
@@ -146,7 +146,7 @@ anywhere a `for_each` on the module block is awkward:
 ```hcl
 module "namespaces" {
   source  = "terraform-temporalcloud-modules/namespace/temporalcloud//wrappers"
-  version = "~> 1.0"
+  version = "~> 2.0"
 
   defaults = {
     regions        = ["aws-us-east-1"]
@@ -228,7 +228,7 @@ No modules.
 | <a name="input_connectivity_rule_ids"></a> [connectivity\_rule\_ids](#input\_connectivity\_rule\_ids) | IDs of connectivity rules to attach to this namespace. No rules are attached when omitted. Omit rather than passing an empty set, which the provider rejects | `set(string)` | `null` | no |
 | <a name="input_create_namespace"></a> [create\_namespace](#input\_create\_namespace) | Controls if the namespace should be created. Set to `false` to disable the module without removing the call | `bool` | `true` | no |
 | <a name="input_fairness"></a> [fairness](#input\_fairness) | Fairness configuration. Task queue fairness is disabled unless enabled here. Once set it cannot be removed — disable with `task_queue_fairness_enabled = false` rather than dropping the variable | <pre>object({<br/>    task_queue_fairness_enabled = optional(bool)<br/>  })</pre> | `null` | no |
-| <a name="input_name"></a> [name](#input\_name) | The name of the namespace. Must be 2-64 characters, start with a letter, contain only lowercase letters, numbers and hyphens, and not end with a hyphen. Pass `""` when `create_namespace` is `false` | `string` | n/a | yes |
+| <a name="input_name"></a> [name](#input\_name) | The name of the namespace. Must be 2-39 characters, start with a letter, contain only lowercase letters, numbers and hyphens, and not end with a hyphen. Pass `""` when `create_namespace` is `false` | `string` | n/a | yes |
 | <a name="input_namespace_lifecycle"></a> [namespace\_lifecycle](#input\_namespace\_lifecycle) | Temporal Cloud lifecycle settings such as delete protection. Unrelated to Terraform's own `lifecycle` meta-argument. Delete protection is off when omitted, and must be set back to `false` and applied before `terraform destroy` can succeed | <pre>object({<br/>    enable_delete_protection = optional(bool)<br/>  })</pre> | `null` | no |
 | <a name="input_regions"></a> [regions](#input\_regions) | Regions the namespace is available in, as cloud-provider-prefixed IDs (for example `aws-us-east-1`, not `us-east-1`). Pass one region, or two to provision a high availability namespace replicated across both. Available regions differ per account — query the `temporalcloud_regions` data source to list the ones yours can use. Regions cannot be changed after creation. Pass `[]` when `create_namespace` is `false` | `list(string)` | n/a | yes |
 | <a name="input_retention_days"></a> [retention\_days](#input\_retention\_days) | Number of days to retain workflow history. Optional — defaults to 30. Changes apply to all new running workflows | `number` | `30` | no |

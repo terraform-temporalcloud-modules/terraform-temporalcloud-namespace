@@ -9,14 +9,16 @@ variable "create_namespace" {
 ################################################################################
 
 variable "name" {
-  description = "The name of the namespace. Must be 2-64 characters, start with a letter, contain only lowercase letters, numbers and hyphens, and not end with a hyphen. Pass `\"\"` when `create_namespace` is `false`"
+  description = "The name of the namespace. Must be 2-39 characters, start with a letter, contain only lowercase letters, numbers and hyphens, and not end with a hyphen. Pass `\"\"` when `create_namespace` is `false`"
   type        = string
 
-  # Mirrors the provider's constraint so a malformed name fails during plan
-  # rather than after a round trip to the Temporal Cloud API.
+  # 39, not the 64 the provider's schema description claims. Temporal Cloud
+  # rejects a longer name at apply with `namespace cannot exceed 39
+  # characters` — observed against a live account, after both validate and plan
+  # had passed. Checking it here fails the plan instead of a round trip.
   validation {
-    condition     = var.name == "" || can(regex("^[a-z][a-z0-9-]{0,62}[a-z0-9]$", var.name))
-    error_message = "The namespace name must be 2-64 characters, start with a letter, contain only lowercase letters, numbers and hyphens, and not end with a hyphen."
+    condition     = var.name == "" || can(regex("^[a-z][a-z0-9-]{0,37}[a-z0-9]$", var.name))
+    error_message = "The namespace name must be 2-39 characters, start with a letter, contain only lowercase letters, numbers and hyphens, and not end with a hyphen."
   }
 }
 

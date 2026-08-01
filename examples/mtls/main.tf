@@ -44,7 +44,7 @@ resource "tls_self_signed_cert" "ca" {
 
 module "namespace" {
   source  = "terraform-temporalcloud-modules/namespace/temporalcloud"
-  version = "~> 1.0"
+  version = "~> 2.0"
 
   name           = local.name
   regions        = ["aws-us-east-1"]
