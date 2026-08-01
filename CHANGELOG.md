@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.2](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/compare/v1.1.1...v1.1.2) (2026-08-01)
+
+### Bug Fixes
+
+* Apply-test the module, fix four real API bugs, drop the two-PR dance ([#6](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/issues/6)) ([339a42f](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/commit/339a42febb146dc1d4e10bdd8387f31972646091))
+
 ## [1.1.1](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/compare/v1.1.0...v1.1.1) (2026-08-01)
 
 ### Bug Fixes
