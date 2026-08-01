@@ -68,16 +68,31 @@ run "create_namespace" {
     error_message = "namespace_regions did not match the requested region"
   }
 
-  // With api_key_auth enabled, Temporal Cloud must return a gRPC endpoint —
-  // this is the value workers and clients actually connect to.
+  // Temporal Cloud populates ALL THREE endpoints on every namespace regardless of
+  // the auth mode: an api_key_auth namespace still reports an mTLS address, and a
+  // certificate-only namespace still reports a gRPC address. So a bare `!= ""`
+  // here would pass on any namespace and prove nothing about api_key_auth.
+  //
+  // What the endpoints do distinguish is scope. The mTLS and Web addresses are
+  // per-namespace hosts built from the namespace ID, so they catch a blank or
+  // another namespace's value; the gRPC address is a SHARED REGIONAL endpoint and
+  // is therefore checked for being exactly that.
   assert {
-    condition     = output.namespace_grpc_address != ""
-    error_message = "namespace_grpc_address is empty despite api_key_auth = true"
+    condition     = startswith(output.namespace_mtls_grpc_address, "${output.namespace_id}.")
+    error_message = "namespace_mtls_grpc_address is not a host for this namespace: ${output.namespace_mtls_grpc_address}"
   }
 
   assert {
-    condition     = output.namespace_web_address != ""
-    error_message = "namespace_web_address is empty"
+    condition     = strcontains(output.namespace_web_address, output.namespace_id)
+    error_message = "namespace_web_address is not a URL for this namespace: ${output.namespace_web_address}"
+  }
+
+  // The distinction consumers most often get wrong when wiring workers: the gRPC
+  // address is regional and shared between namespaces, NOT a per-namespace host
+  // like the mTLS one. Asserting they differ pins that.
+  assert {
+    condition     = output.namespace_grpc_address != "" && output.namespace_grpc_address != output.namespace_mtls_grpc_address
+    error_message = "expected a shared regional gRPC endpoint distinct from the per-namespace mTLS address, got: ${output.namespace_grpc_address}"
   }
 
   // No search attributes or tags requested yet.
@@ -178,9 +193,30 @@ run "add_search_attributes_and_tags" {
     error_message = "hyphenated tag key did not round-trip through the API"
   }
 
-  // Updating children must not have replaced the namespace.
+  // Updating children must not have replaced the namespace. Compare against the
+  // PRIOR run block's ID, never against a value this block passed in as a
+  // variable: `name` is supplied identically to both blocks, so asserting on
+  // namespace_name would hold whether the namespace was updated or destroyed and
+  // recreated.
+  //
+  // A namespace ID is `<name>.<account_id>`, so it is derived rather than opaque.
+  // This therefore asserts continuity of identity across the update; it cannot by
+  // itself distinguish an in-place update from a replacement that happened to
+  // reuse the name. See tests/README.md for why no output can.
   assert {
-    condition     = output.namespace_name == run.setup.namespace_name
-    error_message = "namespace was replaced rather than updated in place"
+    condition     = output.namespace_id == run.create_namespace.namespace_id
+    error_message = "namespace identity changed across the update: was ${run.create_namespace.namespace_id}, now ${output.namespace_id}"
+  }
+
+  // The parent's own configuration must have survived the child-resource update.
+  // A replacement built from a different config would break these.
+  assert {
+    condition     = length(output.namespace_regions) == 1 && output.namespace_regions[0] == run.setup.region
+    error_message = "the namespace lost its region across the update"
+  }
+
+  assert {
+    condition     = output.namespace_grpc_address == run.create_namespace.namespace_grpc_address
+    error_message = "the namespace gRPC endpoint changed across the update"
   }
 }

@@ -61,14 +61,35 @@ run "create_many" {
     error_message = "defaults.tags did not reach the orders item"
   }
 
-  // Per-item values override the defaults rather than merging with them.
   assert {
-    condition     = output.wrapper["payments"].namespace_id != ""
-    error_message = "the payments item was not created"
+    condition     = output.wrapper["payments"].namespace_name == "${run.setup.namespace_name}-payments"
+    error_message = "the payments item did not take its own name"
   }
 
+  // Two distinct namespaces, not the same one reported twice.
+  assert {
+    condition     = output.wrapper["orders"].namespace_id != output.wrapper["payments"].namespace_id
+    error_message = "both wrapper items resolved to the same namespace"
+  }
+
+  // Per-item values reach the item that asked for them...
   assert {
     condition     = length(output.wrapper["orders"].namespace_search_attributes) == 1
     error_message = "per-item search_attributes did not reach the orders item"
+  }
+
+  // ...and only that item. Without this second half, a wrapper that broadcast
+  // every per-item value to every item would still pass.
+  assert {
+    condition     = length(output.wrapper["payments"].namespace_search_attributes) == 0
+    error_message = "the payments item got search attributes it never asked for"
+  }
+
+  // `payments` overrides defaults.retention_days to 2. The module exposes no
+  // retention output, so that override is applied but cannot be asserted — see
+  // tests/README.md. The shared default reaching the item IS checkable.
+  assert {
+    condition     = output.wrapper["payments"].namespace_tags["environment"] == "test"
+    error_message = "defaults.tags did not reach the payments item"
   }
 }

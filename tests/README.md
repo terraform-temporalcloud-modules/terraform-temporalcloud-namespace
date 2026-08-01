@@ -47,6 +47,57 @@ Files run sequentially and each is torn down before the next begins, so only
 [CONTRIBUTING.md](../CONTRIBUTING.md) explains why the layers are split this way
 and which API behaviours they guard against.
 
+## What the apply tests cannot assert
+
+Three things the suite applies but cannot check through any output. They are
+recorded here so nobody adds an assertion that looks like proof and is not.
+
+**The endpoints do not reveal the auth mode.** Temporal Cloud populates all three
+— `grpc_address`, `mtls_grpc_address` and `web_address` — on *every* namespace,
+whichever authentication is configured. A namespace created with
+`api_key_auth = true` and no CA still reports an mTLS address, and a
+certificate-only namespace still reports a gRPC address. So
+`namespace_mtls_grpc_address != ""` does **not** prove `accepted_client_ca` took
+effect, and `namespace_grpc_address != ""` does not prove `api_key_auth` did. The
+tests assert instead that each per-namespace address is scoped to the namespace
+under test. Note that the gRPC address is a shared *regional* endpoint, identical
+for every namespace in that region — only the mTLS and Web addresses are
+per-namespace hosts.
+
+What `mtls.tftest.hcl` genuinely proves is that the API **accepts** a
+Base64-encoded CA bundle and a `certificate_filters` list in the shape the module
+builds; a wrong encoding or a mis-nested filter fails the apply. The module echoes
+neither input back as an output, so there is nothing further to assert.
+
+**In-place update versus replacement is not fully provable.** A namespace ID is
+`<name>.<account_id>`, derived rather than opaque, so a replacement that reused the
+name would report the same ID. `namespace.tftest.hcl` asserts identity *continuity*
+across the update — comparing against the prior run block's ID, never against a
+name the same block passed in as a variable, which would hold either way.
+
+**`retention_days` is not observable.** The module exposes no retention output, so
+the per-item override in `wrappers.tftest.hcl` is applied but unasserted.
+
+## Account access the apply tests require
+
+Only `TEMPORAL_CLOUD_API_KEY` — no AWS, GCP, mail domain or other external
+credential. The key must belong to an account that can create and delete
+namespaces, and the account needs these entitlements or the suite fails for
+reasons unrelated to the module:
+
+| Requirement | Used by | If absent |
+| --- | --- | --- |
+| At least one entitled region | every file | `check-api.sh` fails first, by design |
+| Headroom for 2 concurrent namespaces | `wrappers.tftest.hcl` | namespace quota error |
+| `capacity` mode `on_demand` | `namespace.tftest.hcl` | the API rejects the capacity block |
+| Task queue fairness | `namespace.tftest.hcl` | the API rejects `fairness` |
+| Delete protection | `delete_protection.tftest.hcl` | the API rejects `namespace_lifecycle` |
+
+Region entitlements are per account and are **not** the published region list, so
+the suite reads `data.temporalcloud_regions` rather than hardcoding one. A public
+connectivity rule quota would also be needed to apply `connectivity_rule_ids`,
+which is why that input is not apply-covered.
+
 ## Running the apply tests
 
 ```bash
@@ -62,7 +113,7 @@ Without a key, every run block is skipped — a cheap way to confirm the test fi
 parse:
 
 ```text
-Failure! 0 passed, 0 failed, 4 skipped.
+Failure! 0 passed, 0 failed, 11 skipped.
 ```
 
 ## Cleaning up leftovers
