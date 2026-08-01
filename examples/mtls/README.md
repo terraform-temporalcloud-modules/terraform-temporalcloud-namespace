@@ -44,7 +44,7 @@ sensitive. For real workloads, generate the CA outside Terraform.
 
 | Name | Source | Version |
 | ---- | ------ | ------- |
-| <a name="module_namespace"></a> [namespace](#module\_namespace) | ../../ | n/a |
+| <a name="module_namespace"></a> [namespace](#module\_namespace) | terraform-temporalcloud-modules/namespace/temporalcloud | ~> 1.0 |
 
 ## Resources
 
