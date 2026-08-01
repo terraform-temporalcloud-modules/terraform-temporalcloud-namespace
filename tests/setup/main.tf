@@ -8,14 +8,11 @@ resource "random_pet" "this" {
   separator = "-"
 }
 
-# The regions this account is actually entitled to.
+# Regions this account is entitled to use.
 #
-# Do NOT hardcode a region here. `aws-us-east-1` is listed on
-# https://docs.temporal.io/cloud/regions yet this account rejected it with
-# "Region ... is not a valid Temporal Cloud region", so entitlements vary per
-# account and the provider's error wording is misleading. Reading the data source
-# is what the provider itself recommends, and it keeps the tests portable across
-# accounts.
+# Not hardcoded: the regions an account may use are a subset of the published
+# list, so a fixed ID makes the suite account-specific and can fail with
+# "is not a valid Temporal Cloud region".
 data "temporalcloud_regions" "available" {}
 
 locals {

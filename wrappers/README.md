@@ -7,11 +7,7 @@ not available — most commonly Terragrunt.
 This wrapper adds no functionality of its own. Every key under `items` accepts any input the root
 module accepts, and `defaults` supplies values shared by all items.
 
-> **Maintenance.** These files are hand-maintained. Upstream's
-> `terraform_wrapper_module_for_each` pre-commit hook is deliberately not used, because it overwrites
-> this README on every run with an AWS S3 example whose variables do not exist in this module — see
-> the comment in `.pre-commit-config.yaml`. When you add a variable to the root module, add a matching
-> line to `wrappers/main.tf`; the `wrapper-sync` hook fails the build if you forget.
+Contributors: see [CONTRIBUTING.md](../CONTRIBUTING.md) for how these files are maintained.
 
 ## Usage with Terraform
 

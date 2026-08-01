@@ -1,8 +1,8 @@
 ################################################################################
 # Namespace
 #
-# Every output is wrapped in `try()` because the resources are count-gated on
-# `create_namespace` — a bare reference would fail to evaluate when false.
+# Outputs are wrapped in `try()` so they still evaluate to an empty value when
+# `create_namespace = false` leaves no resource to reference.
 ################################################################################
 
 output "namespace_id" {
@@ -23,8 +23,8 @@ output "namespace_regions" {
 ################################################################################
 # Endpoints
 #
-# Surfaced individually as well as whole: the gRPC address is what worker and
-# client configuration actually needs, so make it directly consumable.
+# Exposed both as a whole and individually, since worker and client
+# configuration usually needs a single address rather than the full object.
 ################################################################################
 
 output "namespace_endpoints" {

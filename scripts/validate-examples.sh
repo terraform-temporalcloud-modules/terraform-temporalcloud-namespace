@@ -4,14 +4,12 @@
 # published release.
 #
 # The committed examples source the published module so consumers can copy them
-# verbatim from the Terraform Registry. Validating them as committed would check
-# the last release instead of this PR's code, which means a module change and its
-# example update could not land in the same PR: the example would reference an
-# input the published version does not have yet.
+# verbatim from the Terraform Registry. Validating them as written would therefore
+# check the last release rather than the working tree.
 #
-# So each example is copied to a temp directory, its registry source is swapped
-# for a path to this repo, and that copy is validated. Tracked files are never
-# modified — pre-commit would report them as dirty on every run.
+# Each example is copied to a temporary directory, its registry source is swapped
+# for a path to this repository, and that copy is validated. Tracked files are
+# never modified. CONTRIBUTING.md covers why this indirection exists.
 #
 # Uses grep/sed/perl rather than rg so it runs on a bare CI image.
 
@@ -57,7 +55,7 @@ for dir in examples/*/; do
     }gmxe
   ' "$tmp"/*.tf
 
-  # Guard: if the rewrite matched nothing we would be validating the published
+  # Guard: if the rewrite matched nothing, the published
   # module and silently lose the whole point of this script.
   if grep -q 'terraform-temporalcloud-modules/' "$tmp"/*.tf; then
     echo "ERROR: $dir still references the registry after rewrite." >&2

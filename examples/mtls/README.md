@@ -7,6 +7,9 @@ The example generates a self-signed CA with the `tls` provider so it runs with n
 Temporal Cloud only ever receives the CA *certificate* — the private key stays in Terraform state. In
 production, replace the generated CA with one issued by your own PKI.
 
+The `regions` value must be one your account is entitled to use — see
+[Choosing regions](../../README.md#choosing-regions) if apply reports an invalid region.
+
 ## Usage
 
 To run this example you need to execute:
