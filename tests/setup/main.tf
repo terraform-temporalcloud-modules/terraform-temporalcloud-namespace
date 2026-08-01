@@ -19,3 +19,29 @@ locals {
   # Sorted so repeat runs pick the same region and results stay comparable.
   region_ids = sort([for r in data.temporalcloud_regions.available.regions : r.id])
 }
+
+# A self-signed CA for the mTLS test. Temporal Cloud only ever receives the
+# certificate; the private key stays in test state and is discarded on teardown.
+resource "tls_private_key" "ca" {
+  algorithm   = "ECDSA"
+  ecdsa_curve = "P256"
+}
+
+resource "tls_self_signed_cert" "ca" {
+  private_key_pem = tls_private_key.ca.private_key_pem
+
+  is_ca_certificate     = true
+  validity_period_hours = 24
+  set_subject_key_id    = true
+
+  subject {
+    common_name  = "${random_pet.this.id}-test-ca"
+    organization = "Terraform Test"
+  }
+
+  allowed_uses = [
+    "cert_signing",
+    "crl_signing",
+    "digital_signature",
+  ]
+}

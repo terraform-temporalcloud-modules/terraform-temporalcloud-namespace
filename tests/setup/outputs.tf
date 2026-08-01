@@ -20,3 +20,8 @@ output "available_regions" {
   description = "Every region this account may use. Surfaced so a test run documents the account's actual entitlements, which differ from the published region list"
   value       = local.region_ids
 }
+
+output "ca_certificate_pem" {
+  description = "Self-signed CA certificate for the mTLS test, in PEM format. The module expects it Base64-encoded"
+  value       = tls_self_signed_cert.ca.cert_pem
+}
