@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.3](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/compare/v1.1.2...v1.1.3) (2026-08-01)
+
+### Bug Fixes
+
+* Correct HA region documentation and complete apply test coverage ([#8](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/issues/8)) ([be53124](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/commit/be531247ad293883358100ec4d231be40a092e8e))
+
 ## [1.1.2](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/compare/v1.1.1...v1.1.2) (2026-08-01)
 
 ### Bug Fixes
