@@ -98,8 +98,23 @@ Without a key every run block is skipped, which is a cheap way to check that the
 Failure! 0 passed, 0 failed, 4 skipped.
 ```
 
-In CI they run from the **Apply Tests** workflow — `workflow_dispatch` plus a weekly schedule, never on
-pull requests, since forks cannot read secrets and every run costs money. Runs are serialized with
+In CI they run from the **Apply Tests** workflow. Its first step is
+`scripts/check-api.sh`, a liveness check that confirms the API answers and the key
+is accepted, so a credentials problem fails immediately rather than surfacing
+minutes later as a namespace that would not create.
+
+Apply Tests is chained after Pre-Commit, and Release after Apply Tests, so a merge
+to main runs:
+
+```text
+push to main -> Pre-Commit -> Apply Tests -> Release
+```
+
+A release is therefore only cut from code that passed both the static gate and the
+tests that apply against a real account. Any failure in the chain stops it.
+
+Apply Tests never runs on pull requests: forks cannot read secrets and every run
+costs money. It also runs weekly, and on demand. Runs are serialized with
 `cancel-in-progress: false`, because cancelling mid-apply would abandon a namespace with no destroy.
 
 Namespaces created by the tests are prefixed so leftovers from an interrupted run are identifiable; see
