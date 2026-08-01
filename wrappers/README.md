@@ -35,8 +35,8 @@ module "namespaces" {
       name = "orders-prod"
 
       search_attributes = {
-        CustomerId = "Keyword"
-        OrderTotal = "Double"
+        CustomerId = "keyword"
+        OrderTotal = "double"
       }
     }
 

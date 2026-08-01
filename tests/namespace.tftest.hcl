@@ -85,13 +85,13 @@ run "add_search_attributes_and_tags" {
     api_key_auth   = true
 
     search_attributes = {
-      CustomerId  = "Keyword"
-      OrderTotal  = "Double"
-      IsPriority  = "Bool"
-      SubmittedAt = "Datetime"
-      Labels      = "KeywordList"
-      Notes       = "Text"
-      Attempts    = "Int"
+      CustomerId  = "keyword"
+      OrderTotal  = "double"
+      IsPriority  = "bool"
+      SubmittedAt = "datetime"
+      Labels      = "keyword_list"
+      Notes       = "text"
+      Attempts    = "int"
     }
 
     tags = {
@@ -108,12 +108,12 @@ run "add_search_attributes_and_tags" {
   }
 
   assert {
-    condition     = output.namespace_search_attributes["CustomerId"] == "Keyword"
+    condition     = output.namespace_search_attributes["CustomerId"] == "keyword"
     error_message = "CustomerId search attribute did not come back as Keyword"
   }
 
   assert {
-    condition     = output.namespace_search_attributes["Attempts"] == "Int"
+    condition     = output.namespace_search_attributes["Attempts"] == "int"
     error_message = "Attempts search attribute did not come back as Int"
   }
 
