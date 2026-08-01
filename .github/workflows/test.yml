@@ -1,0 +1,65 @@
+name: Apply Tests
+
+# These tests CREATE AND DESTROY REAL Temporal Cloud namespaces and bill the
+# account, so they are deliberately not part of the PR gate:
+#
+#   - forked PRs cannot read secrets, so the job would fail for contributors
+#   - namespace creation is slow, and accounts cap how many can exist
+#   - every PR would cost money
+#
+# Run on demand, plus a weekly canary so provider regressions surface without
+# waiting for someone to remember.
+on:
+  workflow_dispatch:
+  schedule:
+    # Mondays 06:00 UTC.
+    - cron: '0 6 * * 1'
+
+# Serialize. Two concurrent runs would compete for the account's namespace quota.
+# cancel-in-progress MUST stay false: cancelling mid-apply would abandon a real
+# namespace with no destroy, leaking cost.
+concurrency:
+  group: apply-tests
+  cancel-in-progress: false
+
+jobs:
+  test:
+    name: terraform test
+    runs-on: ubuntu-latest
+    # Never bill the account from a fork.
+    if: github.repository_owner == 'terraform-temporalcloud-modules'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # Fail fast with a clear message rather than a confusing provider error.
+      # `secrets` is not usable in a job-level `if`, so this is checked in a step.
+      - name: Require API key
+        env:
+          TEMPORAL_CLOUD_API_KEY: ${{ secrets.TEMPORAL_CLOUD_API_KEY }}
+        run: |
+          if [ -z "$TEMPORAL_CLOUD_API_KEY" ]; then
+            echo "::error::TEMPORAL_CLOUD_API_KEY secret is not set. These tests apply real resources and cannot run without it."
+            exit 1
+          fi
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v4.0.1
+        with:
+          terraform_wrapper: false
+
+      - name: Init
+        run: terraform init -backend=false
+
+      # terraform test tears down what it created, including after a failed
+      # assertion. A cancelled or crashed runner can still orphan a namespace, so
+      # check the account if this job does not finish cleanly.
+      - name: Test
+        env:
+          TEMPORAL_CLOUD_API_KEY: ${{ secrets.TEMPORAL_CLOUD_API_KEY }}
+        run: terraform test -verbose
+
+      - name: Warn about possible orphans
+        if: failure() || cancelled()
+        run: |
+          echo "::warning::Run did not complete cleanly. Check the Temporal Cloud account for leftover namespaces named tftest-*."
