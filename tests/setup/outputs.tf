@@ -1,9 +1,18 @@
 output "namespace_name" {
   description = "Unique namespace name for this test run, prefixed `yulei-tftest-ns-` so leftovers from an interrupted run are identifiable in the Temporal Cloud account"
   # `yulei-` identifies the owner, `tftest-` distinguishes test namespaces from
-  # anything created by hand. Satisfies the provider's constraint: 2-64 chars,
-  # starts with a letter, lowercase alphanumerics and hyphens, no trailing hyphen.
-  value = "yulei-tftest-ns-${random_pet.this.id}"
+  # anything created by hand.
+  #
+  # The random part is truncated because the API caps namespace names at 39
+  # characters — well short of the 64 the provider's schema declares, and it
+  # rejects longer names at apply with `namespace cannot exceed 39 characters`.
+  # The 16-character prefix plus the longest suffix a test appends (`-payments`,
+  # 9) leaves 14; 12 keeps a margin. An untruncated `random_pet` is unbounded and
+  # overran the limit on a long draw.
+  #
+  # trimsuffix covers the cut landing on the pet's `-` separator, which would
+  # leave a trailing hyphen and fail the provider's name validation.
+  value = "yulei-tftest-ns-${trimsuffix(substr(random_pet.this.id, 0, 12), "-")}"
 }
 
 output "region" {
