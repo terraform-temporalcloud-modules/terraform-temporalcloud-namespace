@@ -39,8 +39,7 @@ No providers.
 
 | Name | Source | Version |
 | ---- | ------ | ------- |
-| <a name="module_namespace"></a> [namespace](#module\_namespace) | ../../ | n/a |
-| <a name="module_namespace_disabled"></a> [namespace\_disabled](#module\_namespace\_disabled) | ../../ | n/a |
+| <a name="module_namespace"></a> [namespace](#module\_namespace) | terraform-temporalcloud-modules/namespace/temporalcloud | ~> 1.0 |
 
 ## Resources
 

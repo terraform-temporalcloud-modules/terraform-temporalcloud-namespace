@@ -16,7 +16,11 @@ locals {
 ################################################################################
 
 module "namespace" {
-  source = "../../"
+  # The published module, so this example is copy-pasteable as-is. Regression
+  # coverage against the code in this repo lives in tests/local/, which sources
+  # the module by relative path.
+  source  = "terraform-temporalcloud-modules/namespace/temporalcloud"
+  version = "~> 1.0"
 
   name = local.name
 
@@ -64,14 +68,4 @@ module "namespace" {
   }
 
   tags = local.tags
-}
-
-################################################################################
-# Disabled: proves `create_namespace = false` produces no resources
-################################################################################
-
-module "namespace_disabled" {
-  source = "../../"
-
-  create_namespace = false
 }
