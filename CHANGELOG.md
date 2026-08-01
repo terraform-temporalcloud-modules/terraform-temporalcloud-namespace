@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.0](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/compare/v1.1.5...v2.0.0) (2026-08-01)
+
+### ⚠ BREAKING CHANGES
+
+* name and regions no longer have defaults. A module call that
+sets create_namespace = false must now pass them explicitly, for example
+name = "" and regions = [].
+
+### Features
+
+* Require the inputs the provider requires ([7abab4c](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/commit/7abab4c3e5fe1f34cfdf6f51de5d32edd86ba08d))
+
+### Tests
+
+* Keep generated namespace names within the API limit ([f992cbd](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/commit/f992cbd616e09fab8cafabcfd6a89087920dd16d))
+
 ## [1.1.5](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/compare/v1.1.4...v1.1.5) (2026-08-01)
 
 ### Documentation
