@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.5](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/compare/v1.1.4...v1.1.5) (2026-08-01)
+
+### Documentation
+
+* Drop the badge explanation from the README ([b4ed5e5](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/commit/b4ed5e580f5aa988d977e21f35ce968fa4d2c9bf))
+* Trim the validate explanation to what a consumer needs ([1e99a51](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/commit/1e99a511761ac311a36ab55c5ed1d64c70141d72))
+
 ## [1.1.4](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/compare/v1.1.3...v1.1.4) (2026-08-01)
 
 ## [1.1.3](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/compare/v1.1.2...v1.1.3) (2026-08-01)
