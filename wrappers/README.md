@@ -26,7 +26,7 @@ module "namespaces" {
     api_key_auth   = true
 
     tags = {
-      Terraform = "true"
+      terraform = "true"
     }
   }
 

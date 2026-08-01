@@ -94,9 +94,13 @@ run "add_search_attributes_and_tags" {
       Attempts    = "int"
     }
 
+    // Tag keys must be lowercase — the API rejects `Environment` with
+    // "tag key contains invalid characters", though the provider documents no
+    // constraint at all. `managed-by` deliberately probes whether separators are
+    // allowed, since the answer is undocumented and consumers will want it.
     tags = {
-      Environment = "test"
-      ManagedBy   = "terraform"
+      environment  = "test"
+      "managed-by" = "terraform"
     }
   }
 
@@ -117,9 +121,22 @@ run "add_search_attributes_and_tags" {
     error_message = "Attempts search attribute did not come back as Int"
   }
 
+  // Asserted elementwise rather than with == against tomap(...): the output comes
+  // from try(x, {}), and comparing an object to a map is the same trap that made
+  // the namespace_regions assertion fail.
   assert {
-    condition     = output.namespace_tags == tomap({ Environment = "test", ManagedBy = "terraform" })
-    error_message = "namespace_tags did not round-trip through the API"
+    condition     = length(output.namespace_tags) == 2
+    error_message = "expected 2 tags, got ${length(output.namespace_tags)}"
+  }
+
+  assert {
+    condition     = output.namespace_tags["environment"] == "test"
+    error_message = "environment tag did not round-trip through the API"
+  }
+
+  assert {
+    condition     = output.namespace_tags["managed-by"] == "terraform"
+    error_message = "hyphenated tag key did not round-trip through the API"
   }
 
   // Updating children must not have replaced the namespace.

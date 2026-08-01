@@ -79,7 +79,7 @@ module "all_inputs" {
   }
 
   tags = {
-    Terraform = "true"
+    terraform = "true"
   }
 }
 

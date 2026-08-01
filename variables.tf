@@ -183,7 +183,7 @@ variable "search_attributes" {
 ################################################################################
 
 variable "tags" {
-  description = "Map of tags to apply to the namespace. The provider manages the complete tag set, so tags applied outside Terraform will be removed"
+  description = "Map of tags to apply to the namespace. Keys must be lowercase — the API rejects `Environment` with `tag key contains invalid characters`, though the provider documents no constraint. The provider manages the complete tag set, so tags applied outside Terraform will be removed"
   type        = map(string)
   default     = {}
 }

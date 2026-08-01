@@ -24,8 +24,8 @@ module "namespace" {
   }
 
   tags = {
-    Environment = "prod"
-    Team        = "payments"
+    environment = "prod"
+    team        = "payments"
   }
 }
 ```
@@ -155,7 +155,7 @@ No modules.
 | <a name="input_regions"></a> [regions](#input\_regions) | The list of regions where this namespace is available. Must be one or two regions, prefixed with the cloud provider (e.g. `aws-us-east-1`, not `us-east-1`). Two regions provisions a high availability (HA) namespace replicated across them | `list(string)` | `[]` | no |
 | <a name="input_retention_days"></a> [retention\_days](#input\_retention\_days) | The number of days to retain workflow history. Changes apply to all new running workflows | `number` | `30` | no |
 | <a name="input_search_attributes"></a> [search\_attributes](#input\_search\_attributes) | Map of custom search attribute name => type. Valid types: `bool`, `datetime`, `double`, `int`, `keyword`, `keyword_list`, `text` (case-insensitive) | `map(string)` | `{}` | no |
-| <a name="input_tags"></a> [tags](#input\_tags) | Map of tags to apply to the namespace. The provider manages the complete tag set, so tags applied outside Terraform will be removed | `map(string)` | `{}` | no |
+| <a name="input_tags"></a> [tags](#input\_tags) | Map of tags to apply to the namespace. Keys must be lowercase — the API rejects `Environment` with `tag key contains invalid characters`, though the provider documents no constraint. The provider manages the complete tag set, so tags applied outside Terraform will be removed | `map(string)` | `{}` | no |
 | <a name="input_timeouts"></a> [timeouts](#input\_timeouts) | Create and delete timeouts for the namespace, as duration strings (e.g. `30s`, `2h45m`) | <pre>object({<br/>    create = optional(string)<br/>    delete = optional(string)<br/>  })</pre> | `{}` | no |
 
 ## Outputs

@@ -67,8 +67,8 @@ module "namespace" {
   ]
 
   tags = {
-    Example   = local.name
-    Terraform = "true"
-    AuthMode  = "mtls"
+    example   = local.name
+    terraform = "true"
+    authmode  = "mtls"
   }
 }

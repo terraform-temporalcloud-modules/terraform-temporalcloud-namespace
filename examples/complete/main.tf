@@ -6,8 +6,8 @@ locals {
   name = "ex-${basename(path.cwd)}"
 
   tags = {
-    Example   = local.name
-    Terraform = "true"
+    example   = local.name
+    terraform = "true"
   }
 }
 
