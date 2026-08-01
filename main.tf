@@ -6,10 +6,9 @@ locals {
 # Namespace
 #
 # `capacity`, `certificate_filters`, `codec_server`, `fairness` and
-# `namespace_lifecycle` are nested *attributes* in the provider schema, not
-# blocks, so they are assigned directly from their variables. Passing null omits
-# them, which is what the provider expects for "not configured". Only `timeouts`
-# is a real block and therefore needs a dynamic block.
+# `namespace_lifecycle` are nested attributes in the provider schema rather than
+# blocks, so they are assigned straight from their variables and a null value
+# omits them. `timeouts` is the only true block, hence the dynamic block below.
 ################################################################################
 
 resource "temporalcloud_namespace" "this" {
@@ -42,8 +41,8 @@ resource "temporalcloud_namespace" "this" {
 ################################################################################
 # Search attributes
 #
-# One resource per attribute, so `for_each` keyed on the attribute name keeps
-# state addresses stable when attributes are added or removed.
+# One resource per attribute, keyed by name, so adding or removing an attribute
+# does not disturb the state addresses of the others.
 ################################################################################
 
 resource "temporalcloud_namespace_search_attribute" "this" {
@@ -57,8 +56,8 @@ resource "temporalcloud_namespace_search_attribute" "this" {
 ################################################################################
 # Tags
 #
-# Singleton: the provider manages the complete tag set for the namespace, so this
-# takes `count` rather than `for_each`.
+# A single resource owns the namespace's whole tag set, so this takes `count`
+# rather than `for_each` over individual tags.
 ################################################################################
 
 resource "temporalcloud_namespace_tags" "this" {

@@ -1,8 +1,10 @@
 # Complete Temporal Cloud namespace example
 
-Configuration in this directory creates a Temporal Cloud namespace exercising every input the module
-supports, plus a second module call with `create_namespace = false` to prove the create flag produces
-no resources.
+Configuration in this directory creates a Temporal Cloud namespace with API key authentication,
+capacity and fairness settings, a codec server, custom search attributes and tags.
+
+The `regions` value must be one your account is entitled to use — see
+[Choosing regions](../../README.md#choosing-regions) if apply reports an invalid region.
 
 ## Usage
 

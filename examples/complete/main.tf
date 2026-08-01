@@ -16,9 +16,6 @@ locals {
 ################################################################################
 
 module "namespace" {
-  # The published module, so this example is copy-pasteable as-is. Regression
-  # coverage against the code in this repo lives in tests/local/, which sources
-  # the module by relative path.
   source  = "terraform-temporalcloud-modules/namespace/temporalcloud"
   version = "~> 1.0"
 

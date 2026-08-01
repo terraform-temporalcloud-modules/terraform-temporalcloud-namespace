@@ -2,12 +2,8 @@
 #
 # Verifies wrappers/main.tf passes through every variable the root module declares.
 #
-# Upstream's terraform_wrapper_module_for_each pre-commit hook would generate the
-# wrapper for us, but it also overwrites wrappers/README.md on every run with an
-# AWS S3 Terragrunt example referencing variables this module does not have, and
-# exposes no flag to skip the README. Restoring the README afterwards makes the
-# gate permanently dirty, because the generator rewrites it on every pass. So the
-# wrapper files are maintained by hand and this script guards against drift.
+# The wrapper is maintained by hand rather than generated; CONTRIBUTING.md explains
+# why. This guards against it drifting from the root module.
 #
 # Uses grep/sed rather than rg so it runs on a bare CI image.
 
@@ -19,7 +15,7 @@ root_vars="$(grep -oE '^variable "[^"]+"' variables.tf \
   | sed 's/^variable "//; s/"$//' | sort)"
 
 # Extracts the argument names passed to the wrapped module. `source` and
-# `for_each` also match; harmless, since we only report root variables missing
+# `for_each` also match; harmless, since only root variables missing from this
 # from this set.
 wired="$(grep -oE '^  [a-z_]+ +=' wrappers/main.tf | tr -d ' =' | sort)"
 

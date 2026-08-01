@@ -1,5 +1,5 @@
 variable "create_namespace" {
-  description = "Controls if the namespace should be created"
+  description = "Controls if the namespace should be created. Set to `false` to disable the module without removing the call"
   type        = bool
   default     = true
 }
@@ -9,31 +9,31 @@ variable "create_namespace" {
 ################################################################################
 
 variable "name" {
-  description = "The name of the namespace. Must be 2-64 characters, start with a letter, contain only lowercase letters, numbers, and hyphens, and not end with a hyphen"
+  description = "The name of the namespace. Must be 2-64 characters, start with a letter, contain only lowercase letters, numbers and hyphens, and not end with a hyphen. Required unless `create_namespace` is `false`"
   type        = string
   default     = ""
 
+  # Mirrors the provider's constraint so a malformed name fails during plan
+  # rather than after a round trip to the Temporal Cloud API.
   validation {
-    # Mirrors the provider's own constraint so a typo fails at plan time rather
-    # than after a round trip to the Temporal Cloud API.
     condition     = var.name == "" || can(regex("^[a-z][a-z0-9-]{0,62}[a-z0-9]$", var.name))
     error_message = "The namespace name must be 2-64 characters, start with a letter, contain only lowercase letters, numbers and hyphens, and not end with a hyphen."
   }
 }
 
 variable "regions" {
-  description = "The list of regions where this namespace is available. Must be one or two regions, prefixed with the cloud provider (e.g. `aws-us-east-1`, not `us-east-1`). Two regions provisions a high availability (HA) namespace replicated across them"
+  description = "Regions the namespace is available in, as cloud-provider-prefixed IDs (for example `aws-us-east-1`, not `us-east-1`). Pass one region, or two to provision a high availability namespace replicated across both. Available regions differ per account — query the `temporalcloud_regions` data source to list the ones yours can use. Regions cannot be changed after creation"
   type        = list(string)
   default     = []
 
   validation {
     condition     = length(var.regions) <= 2
-    error_message = "A namespace supports at most two regions. Two regions creates an HA namespace."
+    error_message = "A namespace supports at most two regions. Two regions creates a high availability namespace."
   }
 }
 
 variable "retention_days" {
-  description = "The number of days to retain workflow history. Changes apply to all new running workflows"
+  description = "Number of days to retain workflow history. Changes apply to all new running workflows"
   type        = number
   default     = 30
 
@@ -45,22 +45,25 @@ variable "retention_days" {
 
 ################################################################################
 # Authentication
+#
+# A namespace needs at least one method: set `api_key_auth`, or supply
+# `accepted_client_ca` for mTLS. Both may be enabled at once.
 ################################################################################
 
 variable "api_key_auth" {
-  description = "If true, Temporal Cloud will enable API key authentication for this namespace"
+  description = "Enables API key authentication for this namespace"
   type        = bool
   default     = null
 }
 
 variable "accepted_client_ca" {
-  description = "The Base64-encoded CA cert in PEM format that clients use when authenticating with Temporal Cloud. Required when the namespace uses mTLS authentication"
+  description = "Base64-encoded CA certificate in PEM format that clients present when authenticating. Required for mTLS authentication, for example `base64encode(file(\"ca.pem\"))`"
   type        = string
   default     = null
 }
 
 variable "certificate_filters" {
-  description = "A list of filters to apply to client certificates. If present, connections are only allowed from client certificates whose distinguished name properties match at least one filter. Omit rather than passing an empty list"
+  description = "Filters applied to client certificates. When set, connections are accepted only from certificates whose distinguished name matches at least one filter. Omit rather than passing an empty list"
   type = list(object({
     common_name              = optional(string)
     organization             = optional(string)
@@ -70,10 +73,8 @@ variable "certificate_filters" {
   default = null
 
   validation {
-    # try(..., true) rather than a `== null ||` guard: HCL evaluates the null
-    # case fine, but this reads better and is consistent with the other checks.
     condition     = try(length(var.certificate_filters) > 0, true)
-    error_message = "Empty certificate filter lists are not allowed by the provider. Omit the variable instead."
+    error_message = "Empty certificate filter lists are not accepted by the provider. Omit the variable instead."
   }
 }
 
@@ -82,16 +83,16 @@ variable "certificate_filters" {
 ################################################################################
 
 variable "capacity" {
-  description = "The capacity configuration for the namespace. `mode` must be one of `provisioned` or `on_demand`; `value` is required when mode is `provisioned`"
+  description = "Capacity configuration. `mode` is `provisioned` or `on_demand`; `value` is required when mode is `provisioned`"
   type = object({
     mode  = optional(string)
     value = optional(number)
   })
   default = null
 
+  # try() covers both a null object and an omitted mode: contains() errors on a
+  # null value, so `capacity = { value = 10 }` must not reach it.
   validation {
-    # `contains` raises on a null needle, so `capacity = { value = 10 }` with mode
-    # omitted must not reach it. try() absorbs both that and a null capacity.
     condition     = try(contains(["provisioned", "on_demand"], var.capacity.mode), true)
     error_message = "Capacity mode must be one of: provisioned, on_demand."
   }
@@ -103,7 +104,7 @@ variable "capacity" {
 }
 
 variable "codec_server" {
-  description = "A codec server used by the Temporal Cloud UI to decode payloads for all users interacting with this namespace, even when the workflow history itself is encrypted"
+  description = "Codec server the Temporal Cloud UI uses to decode payloads for everyone viewing this namespace, including when the workflow history itself is encrypted"
   type = object({
     endpoint                         = string
     custom_error_link                = optional(string)
@@ -120,15 +121,16 @@ variable "codec_server" {
 }
 
 variable "fairness" {
-  description = "The fairness configuration for the namespace. Task queue fairness defaults to disabled"
+  description = "Fairness configuration. Task queue fairness is disabled unless enabled here"
   type = object({
     task_queue_fairness_enabled = optional(bool)
   })
   default = null
+
 }
 
 variable "namespace_lifecycle" {
-  description = "Temporal Cloud lifecycle configuration, such as delete protection. Unrelated to the Terraform `lifecycle` meta-argument"
+  description = "Temporal Cloud lifecycle settings such as delete protection. Unrelated to Terraform's own `lifecycle` meta-argument. Delete protection must be set back to `false` and applied before `terraform destroy` can succeed"
   type = object({
     enable_delete_protection = optional(bool)
   })
@@ -136,13 +138,13 @@ variable "namespace_lifecycle" {
 }
 
 variable "connectivity_rule_ids" {
-  description = "The IDs of the connectivity rules to attach to this namespace"
+  description = "IDs of connectivity rules to attach to this namespace"
   type        = set(string)
   default     = null
 }
 
 variable "timeouts" {
-  description = "Create and delete timeouts for the namespace, as duration strings (e.g. `30s`, `2h45m`)"
+  description = "Create and delete timeouts, as duration strings such as `30s` or `2h45m`"
   type = object({
     create = optional(string)
     delete = optional(string)
@@ -153,20 +155,19 @@ variable "timeouts" {
 ################################################################################
 # Search attributes
 #
-# Folded into this module rather than published separately: the resource is keyed
-# by namespace_id and is meaningless without its parent namespace.
+# Managed here rather than as a separate module: the underlying resource is keyed
+# by namespace ID and cannot exist without its namespace.
 ################################################################################
 
 variable "search_attributes" {
-  description = "Map of custom search attribute name => type. Valid types: `bool`, `datetime`, `double`, `int`, `keyword`, `keyword_list`, `text` (case-insensitive)"
+  description = "Custom search attributes, as a map of name => type. Valid types are `bool`, `datetime`, `double`, `int`, `keyword`, `keyword_list` and `text`, matched case-insensitively. Search attributes cannot be deleted once created, so removing an entry will not remove it from the namespace"
   type        = map(string)
   default     = {}
 
+  # Note `keyword_list`, with an underscore. Types are matched case-insensitively,
+  # so `KeywordList` resolves to `keywordlist` and is rejected by the API — this
+  # check surfaces that during plan instead.
   validation {
-    # Compared via lower() because the provider treats the type as
-    # case-insensitive. Note `keyword_list` — NOT `KeywordList`: the API
-    # lowercases the input and compares, so `KeywordList` becomes `keywordlist`
-    # and is rejected at apply time. Validating here fails it at plan instead.
     condition = alltrue([
       for type in values(var.search_attributes) :
       contains(["bool", "datetime", "double", "int", "keyword", "keyword_list", "text"], lower(type))
@@ -178,12 +179,13 @@ variable "search_attributes" {
 ################################################################################
 # Tags
 #
-# Folded in for the same reason as search attributes. Note the provider manages
-# the *complete* tag set for a namespace, so this is a singleton resource.
+# Managed here for the same reason as search attributes. The provider owns the
+# namespace's complete tag set, so this is a single resource rather than one per
+# tag.
 ################################################################################
 
 variable "tags" {
-  description = "Map of tags to apply to the namespace. Keys must be lowercase — the API rejects `Environment` with `tag key contains invalid characters`, though the provider documents no constraint. The provider manages the complete tag set, so tags applied outside Terraform will be removed"
+  description = "Tags to apply to the namespace. Keys must be lowercase. This replaces the namespace's entire tag set, so tags added outside Terraform are removed on the next apply"
   type        = map(string)
   default     = {}
 }

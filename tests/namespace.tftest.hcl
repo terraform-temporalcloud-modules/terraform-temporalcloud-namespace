@@ -4,10 +4,10 @@
 // TEMPORAL_CLOUD_API_KEY and are therefore NOT part of the PR gate — see
 // .github/workflows/test.yml, which runs them on demand.
 //
-// Deliberately creates ONE namespace and updates it in place across run blocks
-// rather than creating one per case: namespace creation is slow and Temporal Cloud
-// accounts cap how many can exist. Run blocks share state within a file, so a
-// later block with different variables is an update, not a new namespace.
+// Creates ONE namespace and updates it in place across run blocks rather than one
+// per case: creation is slow and accounts cap how many namespaces can exist. Run
+// blocks share state within a file, so a later block with different variables
+// updates the namespace instead of creating another.
 //
 // terraform test destroys everything it created when the file finishes, including
 // after a failed assertion.
@@ -45,8 +45,8 @@ run "create_namespace" {
   }
 
   assert {
-    // Compared elementwise, not with ==: the output comes from try(..., []) so it is
-    // a tuple, and tuple == list is false even when the contents match.
+    // Elementwise, not ==: the output comes from try(..., []) so it is a tuple,
+    // which never compares equal to a list.
     condition     = length(output.namespace_regions) == 1 && output.namespace_regions[0] == run.setup.region
     error_message = "namespace_regions did not match the requested region"
   }
@@ -94,10 +94,9 @@ run "add_search_attributes_and_tags" {
       Attempts    = "int"
     }
 
-    // Tag keys must be lowercase — the API rejects `Environment` with
-    // "tag key contains invalid characters", though the provider documents no
-    // constraint at all. `managed-by` deliberately probes whether separators are
-    // allowed, since the answer is undocumented and consumers will want it.
+    // Tag keys must be lowercase; the API rejects mixed case with
+    // "tag key contains invalid characters". `managed-by` covers separators,
+    // which the provider does not document either way.
     tags = {
       environment  = "test"
       "managed-by" = "terraform"
@@ -121,9 +120,8 @@ run "add_search_attributes_and_tags" {
     error_message = "Attempts search attribute did not come back as Int"
   }
 
-  // Asserted elementwise rather than with == against tomap(...): the output comes
-  // from try(x, {}), and comparing an object to a map is the same trap that made
-  // the namespace_regions assertion fail.
+  // Elementwise rather than == against tomap(...): the output comes from
+  // try(x, {}), and an object never compares equal to a map.
   assert {
     condition     = length(output.namespace_tags) == 2
     error_message = "expected 2 tags, got ${length(output.namespace_tags)}"

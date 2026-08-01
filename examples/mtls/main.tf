@@ -43,8 +43,6 @@ resource "tls_self_signed_cert" "ca" {
 ################################################################################
 
 module "namespace" {
-  # The published module, so this example is copy-pasteable as-is. Regression
-  # coverage against the code in this repo lives in tests/local/.
   source  = "terraform-temporalcloud-modules/namespace/temporalcloud"
   version = "~> 1.0"
 
