@@ -21,13 +21,6 @@ run "setup" {
   }
 }
 
-// Public connectivity rule fixture, so connectivity_rule_ids can be exercised.
-run "connectivity" {
-  module {
-    source = "./tests/connectivity"
-  }
-}
-
 run "create_namespace" {
   variables {
     name           = run.setup.namespace_name
@@ -50,8 +43,6 @@ run "create_namespace" {
     fairness = {
       task_queue_fairness_enabled = true
     }
-
-    connectivity_rule_ids = [run.connectivity.connectivity_rule_id]
 
     timeouts = {
       create = "10m"
@@ -124,8 +115,6 @@ run "add_search_attributes_and_tags" {
     fairness = {
       task_queue_fairness_enabled = true
     }
-
-    connectivity_rule_ids = [run.connectivity.connectivity_rule_id]
 
     timeouts = {
       create = "10m"

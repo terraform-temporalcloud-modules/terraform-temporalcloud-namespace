@@ -18,6 +18,19 @@ data "temporalcloud_regions" "available" {}
 locals {
   # Sorted so repeat runs pick the same region and results stay comparable.
   region_ids = sort([for r in data.temporalcloud_regions.available.regions : r.id])
+
+  # High availability pairs must share a cloud provider. Combining providers is
+  # rejected with "Selected regions ... are disallowed", so candidates are grouped
+  # by provider and only groups with two or more regions can form a pair.
+  regions_by_provider = {
+    for r in data.temporalcloud_regions.available.regions :
+    r.cloud_provider => r.id...
+  }
+
+  ha_candidates = sort([
+    for provider, ids in local.regions_by_provider : provider
+    if length(ids) >= 2
+  ])
 }
 
 # A self-signed CA for the mTLS test. Temporal Cloud only ever receives the

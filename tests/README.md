@@ -13,11 +13,11 @@ validate` fails there as soon as the variable surface changes.
 
 `*.tftest.hcl` applies against a real Temporal Cloud account, which is the only
 way to catch the API rejecting a configuration that type-checks. Between them they
-cover every module input:
+cover every module input except one, noted below:
 
 | File | Covers |
 | --- | --- |
-| `namespace.tftest.hcl` | Create with API key auth, capacity, codec server, fairness, timeouts and a connectivity rule; then update in place to add all seven search attribute types and tags |
+| `namespace.tftest.hcl` | Create with API key auth, capacity, codec server, fairness and timeouts; then update in place to add all seven search attribute types and tags |
 | `mtls.tftest.hcl` | `accepted_client_ca` and `certificate_filters`, asserting an mTLS endpoint comes back |
 | `ha.tftest.hcl` | Two regions, replicated |
 | `delete_protection.tftest.hcl` | `namespace_lifecycle`, enabling then disabling protection |
@@ -25,8 +25,15 @@ cover every module input:
 | `disabled.tftest.hcl` | `create_namespace = false` creates nothing and every output falls back |
 
 Fixtures: `setup/` generates a unique name, selects a region the account is
-entitled to, and issues a throwaway CA for the mTLS test. `connectivity/` creates
-a public connectivity rule. `orphan-check/` reports leftovers and creates nothing.
+entitled to, picks a same-provider region pair for the HA test, and issues a
+throwaway CA for the mTLS test. `orphan-check/` reports leftovers and creates
+nothing.
+
+`connectivity_rule_ids` is the one input covered only by `local/`. Applying it
+needs a `temporalcloud_connectivity_rule`, and creating one fails on an account
+that has reached its public connectivity rule limit. The provider offers no data
+source to enumerate existing rules, so there is no way to borrow one. The resource
+also belongs to a different module in this family.
 
 Files run sequentially and each is torn down before the next begins, so only
 `wrappers.tftest.hcl` has more than one namespace alive at a time.
