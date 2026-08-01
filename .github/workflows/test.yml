@@ -62,4 +62,4 @@ jobs:
       - name: Warn about possible orphans
         if: failure() || cancelled()
         run: |
-          echo "::warning::Run did not complete cleanly. Check the Temporal Cloud account for leftover namespaces named tftest-*."
+          echo "::warning::Run did not complete cleanly. Check the Temporal Cloud account for leftover namespaces named yulei-tftest-*."
