@@ -25,12 +25,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          # `test` and `refactor` produce no release under the conventionalcommits
+          # preset, same as docs, ci and chore. They are allowed so test-only and
+          # refactor-only changes do not have to be mislabelled.
           types: |
             fix
             feat
             docs
             ci
             chore
+            test
+            refactor
           requireScope: false
           subjectPattern: ^[A-Z].+$
           subjectPatternError: |
