@@ -163,19 +163,11 @@ module "namespaces" {
 
 ## Which inputs are required
 
-Every input carries a Terraform default so that `create_namespace = false` switches the module off
-without a `count` on the module block. terraform-docs reads those defaults and reports
-`Required: no` for all fifteen inputs in the generated table below. This section is the real
-contract for `create_namespace = true`.
+The generated **Inputs** table below marks `name` and `regions` as required, and Terraform enforces
+that — including when `create_namespace = false`, where the module creates nothing but still needs a
+value. Pass `name = ""` and `regions = []` to switch the module off.
 
-### Always required
-
-| Input | If you omit it |
-| ----- | -------------- |
-| `name` | Falls back to `""`, which the provider rejects: `Attribute name string length must be between 2 and 64, got: 0`. |
-| `regions` | Falls back to `[]`. Nothing rejects an empty list locally, so the create call reaches Temporal Cloud and fails there. |
-
-Plus at least one authentication method — see below.
+The rules the table cannot express are below.
 
 ### Conditionally required
 
@@ -195,19 +187,8 @@ Two neighbouring constraints that are not about required-ness but bite in the sa
 - **`certificate_filters` needs `accepted_client_ca` to do anything.** The provider attaches them to
   the mTLS configuration, so filters passed without a CA are silently ignored rather than rejected.
 
-### Optional
-
-| Group | Inputs | Behaviour when omitted |
-| ----- | ------ | ---------------------- |
-| Retention | `retention_days` | Workflow history is retained for 30 days. |
-| Authentication | `certificate_filters` | Any client whose certificate chains to `accepted_client_ca` is accepted, with no filtering on distinguished name. |
-| Scaling | `capacity`, `fairness` | The module sends no capacity configuration, so the account's default applies. Task queue fairness is disabled. |
-| Namespace behaviour | `codec_server`, `namespace_lifecycle`, `connectivity_rule_ids` | No codec server, so the UI shows payloads undecoded. Delete protection is off. No connectivity rules are attached. |
-| Metadata | `search_attributes`, `tags` | The namespace is created with no custom search attributes and no tags. |
-| Terraform behaviour | `create_namespace`, `timeouts` | The namespace is created, with the provider's default timeouts of 10 minutes to create and 5 minutes to delete. |
-
-A configuration that passes `terraform validate` can still be missing `name`, `regions` or an
-authentication method — validate does not check them. Use `terraform plan`.
+A configuration that passes `terraform validate` can still be missing an authentication method —
+validate does not check for one. Use `terraform plan`.
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
@@ -247,9 +228,9 @@ No modules.
 | <a name="input_connectivity_rule_ids"></a> [connectivity\_rule\_ids](#input\_connectivity\_rule\_ids) | IDs of connectivity rules to attach to this namespace. No rules are attached when omitted. Omit rather than passing an empty set, which the provider rejects | `set(string)` | `null` | no |
 | <a name="input_create_namespace"></a> [create\_namespace](#input\_create\_namespace) | Controls if the namespace should be created. Set to `false` to disable the module without removing the call | `bool` | `true` | no |
 | <a name="input_fairness"></a> [fairness](#input\_fairness) | Fairness configuration. Task queue fairness is disabled unless enabled here. Once set it cannot be removed — disable with `task_queue_fairness_enabled = false` rather than dropping the variable | <pre>object({<br/>    task_queue_fairness_enabled = optional(bool)<br/>  })</pre> | `null` | no |
-| <a name="input_name"></a> [name](#input\_name) | The name of the namespace. Must be 2-64 characters, start with a letter, contain only lowercase letters, numbers and hyphens, and not end with a hyphen. Required unless `create_namespace` is `false` | `string` | `""` | no |
+| <a name="input_name"></a> [name](#input\_name) | The name of the namespace. Must be 2-64 characters, start with a letter, contain only lowercase letters, numbers and hyphens, and not end with a hyphen. Pass `""` when `create_namespace` is `false` | `string` | n/a | yes |
 | <a name="input_namespace_lifecycle"></a> [namespace\_lifecycle](#input\_namespace\_lifecycle) | Temporal Cloud lifecycle settings such as delete protection. Unrelated to Terraform's own `lifecycle` meta-argument. Delete protection is off when omitted, and must be set back to `false` and applied before `terraform destroy` can succeed | <pre>object({<br/>    enable_delete_protection = optional(bool)<br/>  })</pre> | `null` | no |
-| <a name="input_regions"></a> [regions](#input\_regions) | Regions the namespace is available in, as cloud-provider-prefixed IDs (for example `aws-us-east-1`, not `us-east-1`). Pass one region, or two to provision a high availability namespace replicated across both. Available regions differ per account — query the `temporalcloud_regions` data source to list the ones yours can use. Regions cannot be changed after creation. Required unless `create_namespace` is `false` | `list(string)` | `[]` | no |
+| <a name="input_regions"></a> [regions](#input\_regions) | Regions the namespace is available in, as cloud-provider-prefixed IDs (for example `aws-us-east-1`, not `us-east-1`). Pass one region, or two to provision a high availability namespace replicated across both. Available regions differ per account — query the `temporalcloud_regions` data source to list the ones yours can use. Regions cannot be changed after creation. Pass `[]` when `create_namespace` is `false` | `list(string)` | n/a | yes |
 | <a name="input_retention_days"></a> [retention\_days](#input\_retention\_days) | Number of days to retain workflow history. Optional — defaults to 30. Changes apply to all new running workflows | `number` | `30` | no |
 | <a name="input_search_attributes"></a> [search\_attributes](#input\_search\_attributes) | Custom search attributes, as a map of name => type. Valid types are `bool`, `datetime`, `double`, `int`, `keyword`, `keyword_list` and `text`, matched case-insensitively. Search attributes cannot be deleted once created, so removing an entry will not remove it from the namespace | `map(string)` | `{}` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags to apply to the namespace. Keys must be lowercase. This replaces the namespace's entire tag set, so tags added outside Terraform are removed on the next apply | `map(string)` | `{}` | no |

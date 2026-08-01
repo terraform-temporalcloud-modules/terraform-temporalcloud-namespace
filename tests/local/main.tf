@@ -89,6 +89,11 @@ module "disabled" {
   source = "../../"
 
   create_namespace = false
+
+  # name and regions have no defaults, so Terraform requires them even when
+  # nothing is created. These empty values are never read.
+  name    = ""
+  regions = []
 }
 
 # Minimum viable call: only the three required-in-practice inputs.

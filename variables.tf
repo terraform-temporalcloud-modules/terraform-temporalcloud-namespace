@@ -9,9 +9,8 @@ variable "create_namespace" {
 ################################################################################
 
 variable "name" {
-  description = "The name of the namespace. Must be 2-64 characters, start with a letter, contain only lowercase letters, numbers and hyphens, and not end with a hyphen. Required unless `create_namespace` is `false`"
+  description = "The name of the namespace. Must be 2-64 characters, start with a letter, contain only lowercase letters, numbers and hyphens, and not end with a hyphen. Pass `\"\"` when `create_namespace` is `false`"
   type        = string
-  default     = ""
 
   # Mirrors the provider's constraint so a malformed name fails during plan
   # rather than after a round trip to the Temporal Cloud API.
@@ -22,9 +21,8 @@ variable "name" {
 }
 
 variable "regions" {
-  description = "Regions the namespace is available in, as cloud-provider-prefixed IDs (for example `aws-us-east-1`, not `us-east-1`). Pass one region, or two to provision a high availability namespace replicated across both. Available regions differ per account — query the `temporalcloud_regions` data source to list the ones yours can use. Regions cannot be changed after creation. Required unless `create_namespace` is `false`"
+  description = "Regions the namespace is available in, as cloud-provider-prefixed IDs (for example `aws-us-east-1`, not `us-east-1`). Pass one region, or two to provision a high availability namespace replicated across both. Available regions differ per account — query the `temporalcloud_regions` data source to list the ones yours can use. Regions cannot be changed after creation. Pass `[]` when `create_namespace` is `false`"
   type        = list(string)
-  default     = []
 
   validation {
     condition     = length(var.regions) <= 2

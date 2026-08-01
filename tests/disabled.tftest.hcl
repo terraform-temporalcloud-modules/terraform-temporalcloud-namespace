@@ -9,6 +9,11 @@ provider "temporalcloud" {}
 run "creates_nothing" {
   variables {
     create_namespace = false
+
+    // name and regions have no defaults, so Terraform requires them even when
+    // nothing is created. These empty values are never read.
+    name    = ""
+    regions = []
   }
 
   // Every output is count-gated behind try(); these assertions prove the
