@@ -206,10 +206,8 @@ Two neighbouring constraints that are not about required-ness but bite in the sa
 | Metadata | `search_attributes`, `tags` | The namespace is created with no custom search attributes and no tags. |
 | Terraform behaviour | `create_namespace`, `timeouts` | The namespace is created, with the provider's default timeouts of 10 minutes to create and 5 minutes to delete. |
 
-Note that `terraform validate` catches only the rules the module enforces itself, because module
-inputs are unknown at validate time and the provider skips its own checks on unknown values. A
-configuration that validates cleanly can still be missing `name`, `regions` or an authentication
-method.
+A configuration that passes `terraform validate` can still be missing `name`, `regions` or an
+authentication method — validate does not check them. Use `terraform plan`.
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
