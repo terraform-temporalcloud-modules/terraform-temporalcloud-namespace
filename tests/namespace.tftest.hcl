@@ -1,13 +1,10 @@
-// Apply-based tests against a REAL Temporal Cloud account.
+// Main lifecycle: create a namespace with every input that can be applied to a
+// single-region API-key namespace, then update it in place to add the child
+// resources.
 //
-// These create and destroy real namespaces and bill the account. They need
-// TEMPORAL_CLOUD_API_KEY and are therefore NOT part of the PR gate — see
-// .github/workflows/test.yml, which runs them on demand.
-//
-// Creates ONE namespace and updates it in place across run blocks rather than one
-// per case: creation is slow and accounts cap how many namespaces can exist. Run
-// blocks share state within a file, so a later block with different variables
-// updates the namespace instead of creating another.
+// Creates ONE namespace and updates it across run blocks rather than one per
+// case. Run blocks share state within a file, so a later block with different
+// variables updates the namespace instead of creating another.
 //
 // terraform test destroys everything it created when the file finishes, including
 // after a failed assertion.
@@ -18,7 +15,6 @@ provider "temporalcloud" {
   // supplies one.
 }
 
-// Unique name so repeat and concurrent runs do not collide.
 run "setup" {
   module {
     source = "./tests/setup"
@@ -31,6 +27,27 @@ run "create_namespace" {
     regions        = [run.setup.region]
     retention_days = 1
     api_key_auth   = true
+
+    capacity = {
+      mode = "on_demand"
+    }
+
+    codec_server = {
+      endpoint                         = "https://codec.example.com"
+      custom_error_link                = "https://example.com/help"
+      custom_error_message             = "Unable to decode payloads."
+      include_cross_origin_credentials = true
+      pass_access_token                = true
+    }
+
+    fairness = {
+      task_queue_fairness_enabled = true
+    }
+
+    timeouts = {
+      create = "10m"
+      delete = "10m"
+    }
   }
 
   assert {
@@ -75,8 +92,7 @@ run "create_namespace" {
   }
 }
 
-// Updates the SAME namespace. Proves the folded-in child resources attach to an
-// existing namespace, which is the whole reason they live in this module.
+// Updates the SAME namespace, adding the child resources this module folds in.
 run "add_search_attributes_and_tags" {
   variables {
     name           = run.setup.namespace_name
@@ -84,6 +100,28 @@ run "add_search_attributes_and_tags" {
     retention_days = 1
     api_key_auth   = true
 
+    capacity = {
+      mode = "on_demand"
+    }
+
+    codec_server = {
+      endpoint                         = "https://codec.example.com"
+      custom_error_link                = "https://example.com/help"
+      custom_error_message             = "Unable to decode payloads."
+      include_cross_origin_credentials = true
+      pass_access_token                = true
+    }
+
+    fairness = {
+      task_queue_fairness_enabled = true
+    }
+
+    timeouts = {
+      create = "10m"
+      delete = "10m"
+    }
+
+    // One of every type the module accepts, to confirm the API agrees.
     search_attributes = {
       CustomerId  = "keyword"
       OrderTotal  = "double"
@@ -103,8 +141,6 @@ run "add_search_attributes_and_tags" {
     }
   }
 
-  // Every search attribute type the module claims to support was accepted by the
-  // API, not merely by terraform validate.
   assert {
     condition     = length(output.namespace_search_attributes) == 7
     error_message = "expected 7 search attributes, got ${length(output.namespace_search_attributes)}"
@@ -112,12 +148,17 @@ run "add_search_attributes_and_tags" {
 
   assert {
     condition     = output.namespace_search_attributes["CustomerId"] == "keyword"
-    error_message = "CustomerId search attribute did not come back as Keyword"
+    error_message = "CustomerId search attribute did not come back as keyword"
+  }
+
+  assert {
+    condition     = output.namespace_search_attributes["Labels"] == "keyword_list"
+    error_message = "Labels search attribute did not come back as keyword_list"
   }
 
   assert {
     condition     = output.namespace_search_attributes["Attempts"] == "int"
-    error_message = "Attempts search attribute did not come back as Int"
+    error_message = "Attempts search attribute did not come back as int"
   }
 
   // Elementwise rather than == against tomap(...): the output comes from

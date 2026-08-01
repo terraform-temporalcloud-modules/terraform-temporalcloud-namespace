@@ -59,7 +59,10 @@ jobs:
           TEMPORAL_CLOUD_API_KEY: ${{ secrets.TEMPORAL_CLOUD_API_KEY }}
         run: terraform test -verbose
 
-      - name: Warn about possible orphans
-        if: failure() || cancelled()
-        run: |
-          echo "::warning::Run did not complete cleanly. Check the Temporal Cloud account for leftover namespaces named yulei-tftest-*."
+      # Runs even when the tests fail, because that is exactly when something may
+      # have been left behind.
+      - name: Check for leftover namespaces
+        if: always()
+        env:
+          TEMPORAL_CLOUD_API_KEY: ${{ secrets.TEMPORAL_CLOUD_API_KEY }}
+        run: scripts/check-orphans.sh

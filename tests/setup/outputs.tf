@@ -12,11 +12,18 @@ output "region" {
 }
 
 output "ha_regions" {
-  description = "Two entitled regions for a high availability namespace, or an empty list when the account has fewer than two"
-  value       = length(local.region_ids) >= 2 ? slice(local.region_ids, 0, 2) : []
+  description = "Two entitled regions from the same cloud provider, suitable for a high availability namespace. Empty when no single provider offers the account two regions"
+  value = length(local.ha_candidates) > 0 ? slice(
+    sort(local.regions_by_provider[local.ha_candidates[0]]), 0, 2
+  ) : []
 }
 
 output "available_regions" {
   description = "Every region this account may use. Surfaced so a test run documents the account's actual entitlements, which differ from the published region list"
   value       = local.region_ids
+}
+
+output "ca_certificate_pem" {
+  description = "Self-signed CA certificate for the mTLS test, in PEM format. The module expects it Base64-encoded"
+  value       = tls_self_signed_cert.ca.cert_pem
 }

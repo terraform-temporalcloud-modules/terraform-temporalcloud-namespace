@@ -1,7 +1,17 @@
 name: Pre-Commit
 
+# Runs on pull requests, and again on main after merge. The second is what makes
+# the README status badge meaningful: without it the workflow never runs on main,
+# so a branch-scoped badge reports "no status". It also catches a merge that breaks
+# main even though the pull request was green.
+#
+# semantic-release marks its changelog commit `[skip ci]`, so the release push does
+# not trigger a redundant run.
 on:
   pull_request:
+    branches:
+      - main
+  push:
     branches:
       - main
 
@@ -70,8 +80,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          # Fall back to the pushed ref: github.event.pull_request is null when
+          # this workflow runs on a push to main.
+          ref: ${{ github.event.pull_request.head.ref || github.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
 
       - name: Terraform min/max versions
         id: minMax
