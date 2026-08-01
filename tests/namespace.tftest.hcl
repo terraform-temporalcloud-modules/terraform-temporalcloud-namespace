@@ -28,7 +28,7 @@ run "setup" {
 run "create_namespace" {
   variables {
     name           = run.setup.namespace_name
-    regions        = ["aws-us-east-1"]
+    regions        = [run.setup.region]
     retention_days = 1
     api_key_auth   = true
   }
@@ -45,7 +45,9 @@ run "create_namespace" {
   }
 
   assert {
-    condition     = output.namespace_regions == tolist(["aws-us-east-1"])
+    // Compared elementwise, not with ==: the output comes from try(..., []) so it is
+    // a tuple, and tuple == list is false even when the contents match.
+    condition     = length(output.namespace_regions) == 1 && output.namespace_regions[0] == run.setup.region
     error_message = "namespace_regions did not match the requested region"
   }
 
@@ -78,7 +80,7 @@ run "create_namespace" {
 run "add_search_attributes_and_tags" {
   variables {
     name           = run.setup.namespace_name
-    regions        = ["aws-us-east-1"]
+    regions        = [run.setup.region]
     retention_days = 1
     api_key_auth   = true
 

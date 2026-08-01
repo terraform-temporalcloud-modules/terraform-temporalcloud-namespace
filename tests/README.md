@@ -44,10 +44,17 @@ terraform init
 terraform test -verbose
 ```
 
-Without the key, the provider fails at configure time and every run block that
-touches Temporal Cloud is skipped. `run "setup"` still passes, so a clean parse
-looks like `1 passed, 0 failed, 3 skipped` — useful for checking syntax without
-billing anything.
+Without the key, the provider fails at configure time and every run block is
+skipped — including `setup`, which reads the `temporalcloud_regions` data source.
+A clean parse therefore looks like:
+
+```
+Failure! 0 passed, 0 failed, 4 skipped.
+```
+
+Useful for checking syntax without billing anything. A syntax or reference error
+looks different: it names the file and line rather than reporting a connection
+failure.
 
 ### Cost and cleanup
 
