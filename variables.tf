@@ -158,16 +158,20 @@ variable "timeouts" {
 ################################################################################
 
 variable "search_attributes" {
-  description = "Map of custom search attribute name => type. Valid types: Bool, Datetime, Double, Int, Keyword, KeywordList, Text"
+  description = "Map of custom search attribute name => type. Valid types: `bool`, `datetime`, `double`, `int`, `keyword`, `keyword_list`, `text` (case-insensitive)"
   type        = map(string)
   default     = {}
 
   validation {
+    # Compared via lower() because the provider treats the type as
+    # case-insensitive. Note `keyword_list` — NOT `KeywordList`: the API
+    # lowercases the input and compares, so `KeywordList` becomes `keywordlist`
+    # and is rejected at apply time. Validating here fails it at plan instead.
     condition = alltrue([
       for type in values(var.search_attributes) :
-      contains(["Bool", "Datetime", "Double", "Int", "Keyword", "KeywordList", "Text"], type)
+      contains(["bool", "datetime", "double", "int", "keyword", "keyword_list", "text"], lower(type))
     ])
-    error_message = "Search attribute types must be one of: Bool, Datetime, Double, Int, Keyword, KeywordList, Text."
+    error_message = "Search attribute types must be one of: bool, datetime, double, int, keyword, keyword_list, text (case-insensitive). Note `keyword_list`, not `KeywordList`."
   }
 }
 
@@ -179,7 +183,7 @@ variable "search_attributes" {
 ################################################################################
 
 variable "tags" {
-  description = "Map of tags to apply to the namespace. The provider manages the complete tag set, so tags applied outside Terraform will be removed"
+  description = "Map of tags to apply to the namespace. Keys must be lowercase — the API rejects `Environment` with `tag key contains invalid characters`, though the provider documents no constraint. The provider manages the complete tag set, so tags applied outside Terraform will be removed"
   type        = map(string)
   default     = {}
 }

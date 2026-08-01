@@ -69,17 +69,17 @@ module "all_inputs" {
   }
 
   search_attributes = {
-    CustomerId  = "Keyword"
-    OrderTotal  = "Double"
-    IsPriority  = "Bool"
-    SubmittedAt = "Datetime"
-    Labels      = "KeywordList"
-    Notes       = "Text"
-    Attempts    = "Int"
+    CustomerId  = "keyword"
+    OrderTotal  = "double"
+    IsPriority  = "bool"
+    SubmittedAt = "datetime"
+    Labels      = "keyword_list"
+    Notes       = "text"
+    Attempts    = "int"
   }
 
   tags = {
-    Terraform = "true"
+    terraform = "true"
   }
 }
 

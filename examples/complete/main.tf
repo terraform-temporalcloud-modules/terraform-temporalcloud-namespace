@@ -6,8 +6,8 @@ locals {
   name = "ex-${basename(path.cwd)}"
 
   tags = {
-    Example   = local.name
-    Terraform = "true"
+    example   = local.name
+    terraform = "true"
   }
 }
 
@@ -60,11 +60,11 @@ module "namespace" {
 
   # Folded into this module because the resource is keyed by namespace_id.
   search_attributes = {
-    CustomerId  = "Keyword"
-    OrderTotal  = "Double"
-    IsPriority  = "Bool"
-    SubmittedAt = "Datetime"
-    Labels      = "KeywordList"
+    CustomerId  = "keyword"
+    OrderTotal  = "double"
+    IsPriority  = "bool"
+    SubmittedAt = "datetime"
+    Labels      = "keyword_list"
   }
 
   tags = local.tags

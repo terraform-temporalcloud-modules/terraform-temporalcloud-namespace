@@ -28,7 +28,7 @@ run "setup" {
 run "create_namespace" {
   variables {
     name           = run.setup.namespace_name
-    regions        = ["aws-us-east-1"]
+    regions        = [run.setup.region]
     retention_days = 1
     api_key_auth   = true
   }
@@ -45,7 +45,9 @@ run "create_namespace" {
   }
 
   assert {
-    condition     = output.namespace_regions == tolist(["aws-us-east-1"])
+    // Compared elementwise, not with ==: the output comes from try(..., []) so it is
+    // a tuple, and tuple == list is false even when the contents match.
+    condition     = length(output.namespace_regions) == 1 && output.namespace_regions[0] == run.setup.region
     error_message = "namespace_regions did not match the requested region"
   }
 
@@ -78,23 +80,27 @@ run "create_namespace" {
 run "add_search_attributes_and_tags" {
   variables {
     name           = run.setup.namespace_name
-    regions        = ["aws-us-east-1"]
+    regions        = [run.setup.region]
     retention_days = 1
     api_key_auth   = true
 
     search_attributes = {
-      CustomerId  = "Keyword"
-      OrderTotal  = "Double"
-      IsPriority  = "Bool"
-      SubmittedAt = "Datetime"
-      Labels      = "KeywordList"
-      Notes       = "Text"
-      Attempts    = "Int"
+      CustomerId  = "keyword"
+      OrderTotal  = "double"
+      IsPriority  = "bool"
+      SubmittedAt = "datetime"
+      Labels      = "keyword_list"
+      Notes       = "text"
+      Attempts    = "int"
     }
 
+    // Tag keys must be lowercase — the API rejects `Environment` with
+    // "tag key contains invalid characters", though the provider documents no
+    // constraint at all. `managed-by` deliberately probes whether separators are
+    // allowed, since the answer is undocumented and consumers will want it.
     tags = {
-      Environment = "test"
-      ManagedBy   = "terraform"
+      environment  = "test"
+      "managed-by" = "terraform"
     }
   }
 
@@ -106,18 +112,31 @@ run "add_search_attributes_and_tags" {
   }
 
   assert {
-    condition     = output.namespace_search_attributes["CustomerId"] == "Keyword"
+    condition     = output.namespace_search_attributes["CustomerId"] == "keyword"
     error_message = "CustomerId search attribute did not come back as Keyword"
   }
 
   assert {
-    condition     = output.namespace_search_attributes["Attempts"] == "Int"
+    condition     = output.namespace_search_attributes["Attempts"] == "int"
     error_message = "Attempts search attribute did not come back as Int"
   }
 
+  // Asserted elementwise rather than with == against tomap(...): the output comes
+  // from try(x, {}), and comparing an object to a map is the same trap that made
+  // the namespace_regions assertion fail.
   assert {
-    condition     = output.namespace_tags == tomap({ Environment = "test", ManagedBy = "terraform" })
-    error_message = "namespace_tags did not round-trip through the API"
+    condition     = length(output.namespace_tags) == 2
+    error_message = "expected 2 tags, got ${length(output.namespace_tags)}"
+  }
+
+  assert {
+    condition     = output.namespace_tags["environment"] == "test"
+    error_message = "environment tag did not round-trip through the API"
+  }
+
+  assert {
+    condition     = output.namespace_tags["managed-by"] == "terraform"
+    error_message = "hyphenated tag key did not round-trip through the API"
   }
 
   // Updating children must not have replaced the namespace.

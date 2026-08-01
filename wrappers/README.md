@@ -26,7 +26,7 @@ module "namespaces" {
     api_key_auth   = true
 
     tags = {
-      Terraform = "true"
+      terraform = "true"
     }
   }
 
@@ -35,8 +35,8 @@ module "namespaces" {
       name = "orders-prod"
 
       search_attributes = {
-        CustomerId = "Keyword"
-        OrderTotal = "Double"
+        CustomerId = "keyword"
+        OrderTotal = "double"
       }
     }
 

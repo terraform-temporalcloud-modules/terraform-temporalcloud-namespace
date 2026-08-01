@@ -5,15 +5,18 @@ interchangeable.
 
 | Path | Runs on | Needs credentials | Proves |
 | --- | --- | --- | --- |
-| `local/` | every PR | no | The configuration type-checks and the variable surface has not changed incompatibly |
+| `local/` | every PR | no | Every input passed and every output referenced; the variable surface has not changed incompatibly |
 | `*.tftest.hcl` | on demand + weekly | **yes** | Temporal Cloud actually accepts these payloads |
 | `setup/` | helper for `*.tftest.hcl` | no | — |
 
 ## `local/` — validation gate
 
-Sources the module by relative path and passes every input. `terraform validate`
-fails here the moment the variable surface changes, which the `examples/` cannot
-catch because they resolve the last published release. See
+Sources the module by relative path and passes **every** input, referencing every
+output. `terraform validate` fails here the moment the variable surface changes.
+
+The `examples/` are also checked against the working tree — `scripts/validate-examples.sh`
+rewrites their registry source in a temp copy — but they exercise only a realistic
+subset of inputs, so this directory remains the exhaustive one. See
 [local/README.md](local/README.md).
 
 This is a **validation** gate, not a test: `terraform validate` never executes
@@ -44,10 +47,17 @@ terraform init
 terraform test -verbose
 ```
 
-Without the key, the provider fails at configure time and every run block that
-touches Temporal Cloud is skipped. `run "setup"` still passes, so a clean parse
-looks like `1 passed, 0 failed, 3 skipped` — useful for checking syntax without
-billing anything.
+Without the key, the provider fails at configure time and every run block is
+skipped — including `setup`, which reads the `temporalcloud_regions` data source.
+A clean parse therefore looks like:
+
+```
+Failure! 0 passed, 0 failed, 4 skipped.
+```
+
+Useful for checking syntax without billing anything. A syntax or reference error
+looks different: it names the file and line rather than reporting a connection
+failure.
 
 ### Cost and cleanup
 

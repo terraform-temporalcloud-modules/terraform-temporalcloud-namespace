@@ -24,7 +24,9 @@ run "creates_nothing" {
   }
 
   assert {
-    condition     = output.namespace_regions == tolist([])
+    // length(), not == tolist([]): the output comes from try(..., []) so it is an
+    // empty tuple, and tuple == list is false even when both are empty.
+    condition     = length(output.namespace_regions) == 0
     error_message = "namespace_regions should fall back to an empty list"
   }
 
