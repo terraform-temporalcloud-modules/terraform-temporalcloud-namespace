@@ -22,7 +22,7 @@ variable "name" {
 }
 
 variable "regions" {
-  description = "Regions the namespace is available in, as cloud-provider-prefixed IDs (for example `aws-us-east-1`, not `us-east-1`). Pass one region, or two to provision a high availability namespace replicated across both. Available regions differ per account — query the `temporalcloud_regions` data source to list the ones yours can use. Regions cannot be changed after creation"
+  description = "Regions the namespace is available in, as cloud-provider-prefixed IDs (for example `aws-us-east-1`, not `us-east-1`). Pass one region, or two to provision a high availability namespace replicated across both. Available regions differ per account — query the `temporalcloud_regions` data source to list the ones yours can use. Regions cannot be changed after creation. Required unless `create_namespace` is `false`"
   type        = list(string)
   default     = []
 
@@ -33,7 +33,7 @@ variable "regions" {
 }
 
 variable "retention_days" {
-  description = "Number of days to retain workflow history. Changes apply to all new running workflows"
+  description = "Number of days to retain workflow history. Optional — defaults to 30. Changes apply to all new running workflows"
   type        = number
   default     = 30
 
@@ -51,19 +51,19 @@ variable "retention_days" {
 ################################################################################
 
 variable "api_key_auth" {
-  description = "Enables API key authentication for this namespace"
+  description = "Enables API key authentication for this namespace. Set this, `accepted_client_ca`, or both — a namespace must accept at least one authentication method, and the provider rejects one that accepts neither"
   type        = bool
   default     = null
 }
 
 variable "accepted_client_ca" {
-  description = "Base64-encoded CA certificate in PEM format that clients present when authenticating. Required for mTLS authentication, for example `base64encode(file(\"ca.pem\"))`"
+  description = "Base64-encoded CA certificate in PEM format that clients present when authenticating, for example `base64encode(file(\"ca.pem\"))`. Required to use mTLS. Set this, `api_key_auth`, or both — a namespace must accept at least one authentication method, and the provider rejects one that accepts neither"
   type        = string
   default     = null
 }
 
 variable "certificate_filters" {
-  description = "Filters applied to client certificates. When set, connections are accepted only from certificates whose distinguished name matches at least one filter. Omit rather than passing an empty list"
+  description = "Filters applied to client certificates. When set, connections are accepted only from certificates whose distinguished name matches at least one filter. Takes effect only alongside `accepted_client_ca` — filters supplied without a CA are ignored. Omit rather than passing an empty list"
   type = list(object({
     common_name              = optional(string)
     organization             = optional(string)
@@ -83,7 +83,7 @@ variable "certificate_filters" {
 ################################################################################
 
 variable "capacity" {
-  description = "Capacity configuration. `mode` is `provisioned` or `on_demand`; `value` is required when mode is `provisioned`"
+  description = "Capacity configuration. `mode` is `provisioned` or `on_demand`, and `value` is required when mode is `provisioned`. Only `on_demand` is accepted while creating a namespace, so `provisioned` can be set only on one that already exists. Once capacity is set it cannot be removed — revert with `mode = \"on_demand\"` rather than dropping the variable"
   type = object({
     mode  = optional(string)
     value = optional(number)
@@ -104,7 +104,7 @@ variable "capacity" {
 }
 
 variable "codec_server" {
-  description = "Codec server the Temporal Cloud UI uses to decode payloads for everyone viewing this namespace, including when the workflow history itself is encrypted"
+  description = "Codec server the Temporal Cloud UI uses to decode payloads for everyone viewing this namespace, including when the workflow history itself is encrypted. `endpoint` is required whenever this is set, and must begin with `https`. No codec server is configured when omitted"
   type = object({
     endpoint                         = string
     custom_error_link                = optional(string)
@@ -121,7 +121,7 @@ variable "codec_server" {
 }
 
 variable "fairness" {
-  description = "Fairness configuration. Task queue fairness is disabled unless enabled here"
+  description = "Fairness configuration. Task queue fairness is disabled unless enabled here. Once set it cannot be removed — disable with `task_queue_fairness_enabled = false` rather than dropping the variable"
   type = object({
     task_queue_fairness_enabled = optional(bool)
   })
@@ -130,7 +130,7 @@ variable "fairness" {
 }
 
 variable "namespace_lifecycle" {
-  description = "Temporal Cloud lifecycle settings such as delete protection. Unrelated to Terraform's own `lifecycle` meta-argument. Delete protection must be set back to `false` and applied before `terraform destroy` can succeed"
+  description = "Temporal Cloud lifecycle settings such as delete protection. Unrelated to Terraform's own `lifecycle` meta-argument. Delete protection is off when omitted, and must be set back to `false` and applied before `terraform destroy` can succeed"
   type = object({
     enable_delete_protection = optional(bool)
   })
@@ -138,13 +138,13 @@ variable "namespace_lifecycle" {
 }
 
 variable "connectivity_rule_ids" {
-  description = "IDs of connectivity rules to attach to this namespace"
+  description = "IDs of connectivity rules to attach to this namespace. No rules are attached when omitted. Omit rather than passing an empty set, which the provider rejects"
   type        = set(string)
   default     = null
 }
 
 variable "timeouts" {
-  description = "Create and delete timeouts, as duration strings such as `30s` or `2h45m`"
+  description = "Create and delete timeouts, as duration strings such as `30s` or `2h45m`. The provider's own defaults — 10 minutes to create, 5 minutes to delete — apply to whichever is omitted"
   type = object({
     create = optional(string)
     delete = optional(string)
