@@ -218,9 +218,9 @@ No modules.
 | Name | Description |
 | ---- | ----------- |
 | <a name="output_namespace_endpoints"></a> [namespace\_endpoints](#output\_namespace\_endpoints) | All endpoints for the namespace (gRPC, mTLS gRPC and Web UI addresses) |
-| <a name="output_namespace_grpc_address"></a> [namespace\_grpc\_address](#output\_namespace\_grpc\_address) | The gRPC address for API key client connections. Empty when API key auth is disabled |
+| <a name="output_namespace_grpc_address"></a> [namespace\_grpc\_address](#output\_namespace\_grpc\_address) | The gRPC address for API key client connections, for example `aws-us-east-1.aws.api.temporal.io:7233`. This is a **regional** address shared by every namespace in the region, so it does not identify the namespace — clients using API key authentication also send the namespace name. Returned whether or not `api_key_auth` is set, so its presence does not indicate that API key authentication is enabled |
 | <a name="output_namespace_id"></a> [namespace\_id](#output\_namespace\_id) | The unique identifier of the namespace across all Temporal Cloud tenants, in the form `<namespace>.<account_id>` |
-| <a name="output_namespace_mtls_grpc_address"></a> [namespace\_mtls\_grpc\_address](#output\_namespace\_mtls\_grpc\_address) | The gRPC address for mTLS client connections. Empty when mTLS is disabled |
+| <a name="output_namespace_mtls_grpc_address"></a> [namespace\_mtls\_grpc\_address](#output\_namespace\_mtls\_grpc\_address) | The gRPC address for mTLS client connections, for example `my-namespace.a1b2c.tmprl.cloud:7233`. Unlike the API key address this is specific to the namespace. Returned whether or not `accepted_client_ca` is set, so its presence does not indicate that mTLS is enabled |
 | <a name="output_namespace_name"></a> [namespace\_name](#output\_namespace\_name) | The name of the namespace |
 | <a name="output_namespace_regions"></a> [namespace\_regions](#output\_namespace\_regions) | The regions the namespace is available in |
 | <a name="output_namespace_search_attributes"></a> [namespace\_search\_attributes](#output\_namespace\_search\_attributes) | Map of custom search attribute name => type created on the namespace |

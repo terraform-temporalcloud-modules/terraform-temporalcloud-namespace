@@ -33,12 +33,12 @@ output "namespace_endpoints" {
 }
 
 output "namespace_grpc_address" {
-  description = "The gRPC address for API key client connections. Empty when API key auth is disabled"
+  description = "The gRPC address for API key client connections, for example `aws-us-east-1.aws.api.temporal.io:7233`. This is a **regional** address shared by every namespace in the region, so it does not identify the namespace — clients using API key authentication also send the namespace name. Returned whether or not `api_key_auth` is set, so its presence does not indicate that API key authentication is enabled"
   value       = try(temporalcloud_namespace.this[0].endpoints.grpc_address, "")
 }
 
 output "namespace_mtls_grpc_address" {
-  description = "The gRPC address for mTLS client connections. Empty when mTLS is disabled"
+  description = "The gRPC address for mTLS client connections, for example `my-namespace.a1b2c.tmprl.cloud:7233`. Unlike the API key address this is specific to the namespace. Returned whether or not `accepted_client_ca` is set, so its presence does not indicate that mTLS is enabled"
   value       = try(temporalcloud_namespace.this[0].endpoints.mtls_grpc_address, "")
 }
 
