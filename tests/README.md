@@ -5,15 +5,18 @@ interchangeable.
 
 | Path | Runs on | Needs credentials | Proves |
 | --- | --- | --- | --- |
-| `local/` | every PR | no | The configuration type-checks and the variable surface has not changed incompatibly |
+| `local/` | every PR | no | Every input passed and every output referenced; the variable surface has not changed incompatibly |
 | `*.tftest.hcl` | on demand + weekly | **yes** | Temporal Cloud actually accepts these payloads |
 | `setup/` | helper for `*.tftest.hcl` | no | — |
 
 ## `local/` — validation gate
 
-Sources the module by relative path and passes every input. `terraform validate`
-fails here the moment the variable surface changes, which the `examples/` cannot
-catch because they resolve the last published release. See
+Sources the module by relative path and passes **every** input, referencing every
+output. `terraform validate` fails here the moment the variable surface changes.
+
+The `examples/` are also checked against the working tree — `scripts/validate-examples.sh`
+rewrites their registry source in a temp copy — but they exercise only a realistic
+subset of inputs, so this directory remains the exhaustive one. See
 [local/README.md](local/README.md).
 
 This is a **validation** gate, not a test: `terraform validate` never executes
