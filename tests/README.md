@@ -53,13 +53,32 @@ billing anything.
 
 These create real, billable namespaces. `terraform test` destroys what it created,
 including after a failed assertion, but a cancelled or crashed runner can orphan
-one. Names are prefixed `tftest-` so leftovers are easy to find:
+one.
+
+Every namespace these tests can create is prefixed **`yulei-`** so leftovers are
+identifiable and safe to delete:
+
+| Prefix | Created by |
+| --- | --- |
+| `yulei-tftest-<random>` | `*.tftest.hcl` — the apply tests |
+| `yulei-tflocal-*` | `local/` — only if someone runs `terraform apply` there by hand; CI never applies it |
+
+To find leftovers:
 
 ```bash
-terraform console <<< 'data.temporalcloud_namespaces.all'   # or check the Cloud UI
+# Cloud UI, or:
+terraform state list          # inside the failed directory, if state survived
 ```
 
-Point these at a scratch account, never production.
+Anything matching `yulei-*` that no live configuration owns is an orphan and can be
+deleted.
+
+Note the `examples/` directories are **not** covered by this prefix — they create
+`ex-complete` and `ex-mtls`. That is deliberate: example code is published to the
+Terraform Registry and read by customers, so it must not carry a personal prefix.
+Check for those two names separately if you have applied an example by hand.
+
+Point all of this at a scratch account, never production.
 
 ### CI
 

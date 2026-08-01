@@ -24,7 +24,7 @@ module "all_inputs" {
 
   create_namespace = true
 
-  name           = "tf-local-test"
+  name           = "yulei-tflocal-test"
   regions        = ["aws-us-east-1"]
   retention_days = 14
 
@@ -95,7 +95,7 @@ module "disabled" {
 module "minimal" {
   source = "../../"
 
-  name           = "tf-local-minimal"
+  name           = "yulei-tflocal-minimal"
   regions        = ["aws-us-east-1"]
   retention_days = 1
 }
@@ -111,7 +111,7 @@ module "wrapper" {
   }
 
   items = {
-    orders   = { name = "tf-local-orders" }
-    payments = { name = "tf-local-payments", retention_days = 90 }
+    orders   = { name = "yulei-tflocal-orders" }
+    payments = { name = "yulei-tflocal-payments", retention_days = 90 }
   }
 }
