@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.2](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/compare/v2.0.1...v2.0.2) (2026-08-03)
+
+### Tests
+
+* Coalesce null data source lists in the orphan check ([#11](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/issues/11)) ([f5ef240](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/commit/f5ef240899d5f1de90266969843fb2d23578fc4d))
+
 ## [2.0.1](https://github.com/terraform-temporalcloud-modules/terraform-temporalcloud-namespace/compare/v2.0.0...v2.0.1) (2026-08-01)
 
 ### Bug Fixes
